@@ -1,0 +1,37 @@
+{
+  "name": "ha-amazing-weather-card",
+  "version": "0.1.0",
+  "description": "A Home Assistant card combining your weather station, history and forecast.",
+  "type": "module",
+  "private": true,
+  "license": "MIT",
+  "repository": "github:raunosr/ha-amazing-weather-card",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "dev": "node scripts/dev.mjs",
+    "typecheck": "tsc --noEmit",
+    "format": "prettier --write src tests scripts demo docs *.json *.md *.ts .github",
+    "lint": "prettier --check src tests scripts demo docs *.json *.md *.ts .github",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:browser": "playwright test",
+    "check": "npm run typecheck && npm run lint && npm test && npm run build"
+  },
+  "dependencies": {
+    "@mdi/js": "7.4.47",
+    "lit": "3.3.3",
+    "suncalc": "1.9.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0",
+    "@types/node": "26.5.0",
+    "@types/suncalc": "1.9.2",
+    "esbuild": "0.28.2",
+    "prettier": "3.9.6",
+    "typescript": "7.0.2",
+    "vitest": "5.0.0"
+  }
+}

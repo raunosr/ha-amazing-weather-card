@@ -1,0 +1,56 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Existing package version to publish, for example 0.1.0"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Validate release version
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: node scripts/validate-release.mjs
+      - run: npm ci
+      - run: npm run check
+      - run: git diff --exit-code -- dist/ha-amazing-weather-card.js
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:browser
+      - name: Prepare release notes and checksum
+        run: node scripts/prepare-release.mjs
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: >-
+          gh release create "v$RELEASE_VERSION"
+          dist/ha-amazing-weather-card.js .cache/SHA256SUMS
+          --target "$GITHUB_SHA"
+          --title "Amazing Weather Card v$RELEASE_VERSION"
+          --notes-file .cache/release-notes.md
+      - name: Validate published HACS release
+        uses: hacs/action@1ebf01c408f29afcb6406bd431bc98fd8cbb15aa # main
+        with:
+          category: plugin
+          comment: false

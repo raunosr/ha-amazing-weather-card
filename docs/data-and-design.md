@@ -8,6 +8,8 @@ Sunrise, sunset and moon illumination share a compact button above the weather s
 
 Automatic colours follow the rendered HA card surface, rather than trusting the profile's dark-mode flag: a view theme can differ from that flag. Transparent and gradient cards use the theme's text colour to select contrasting weather accents. Forced light/dark modes retain fixed card palettes. Ancestor theme changes across shadow roots are observed and those observers are removed when the card disconnects.
 
+In automatic mode the native `ha-card` owns its background, text, border, shadow and backdrop styles. The weather card does not redeclare these properties or add a hero tint: Lit's adopted stylesheets otherwise override card-mod's injected theme rules at equal specificity, hiding glass layers behind an opaque background. Browser coverage includes injected theme CSS as well as CSS-variable themes. The standalone demo has a fallback surface only when `ha-card` is not defined.
+
 The weather condition icon is a **weather service estimate**. A local temperature sensor does not reveal cloud coverage. Station temperature/history and provider forecasts can disagree; a gap between the solid and dashed lines is therefore intentional. We never shift the forecast to make the two lines meet.
 
 Data is read from the existing HA state machine, `weather/subscribe_forecast` and `history/history_during_period`. Connections are shared per weather entity and forecast feature set, released when the last card disconnects, and subscription failures retry after 1, 2, 4 and then 5 minutes. HA's connection object handles ordinary websocket resubscription; replacing that object triggers fresh subscriptions. No service calls change your HA configuration or sensor values.

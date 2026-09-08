@@ -117,6 +117,12 @@ export const cardStyles = css`
   ha-card {
     display: block;
     overflow: hidden;
+  }
+  /* In auto mode HA owns the surface. Re-declaring its CSS properties here
+     overrides card-mod theme rules because Lit's adopted sheets come last. */
+  :host([data-force-theme="dark"]) ha-card,
+  :host([data-force-theme="light"]) ha-card,
+  ha-card:not(:defined) {
     border-radius: var(--ha-card-border-radius, 24px);
     background: var(--aw-bg);
     color: var(--aw-text);
@@ -171,6 +177,9 @@ export const cardStyles = css`
   }
   .hero {
     padding: 6px 20px 12px;
+  }
+  :host([data-force-theme="dark"]) .hero,
+  :host([data-force-theme="light"]) .hero {
     background: radial-gradient(
       ellipse at 90% 22%,
       var(--aw-sky),

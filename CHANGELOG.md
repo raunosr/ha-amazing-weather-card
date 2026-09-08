@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.1 — 2026-09-08
+
+- Fix automatic mode overriding card-mod theme CSS. Let the native Home Assistant card render its background, text, borders, shadows and backdrop effects so glass themes remain transparent.
+- Remove the card's own hero tint in automatic mode; retain it in the optional dark and light palettes.
+- Add a regression check that injects a glass theme alongside Lit's adopted stylesheets, matching how card-mod applies themes in Home Assistant.
+
 ## 0.2.0 — 2026-09-08
 
 - Fix automatic theme contrast when the dashboard theme differs from the HA profile mode, including translucent and gradient themes and live theme changes.

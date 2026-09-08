@@ -176,6 +176,73 @@ test("translucent and gradient themes use the view text and preserve its glass s
   await expect(card).not.toHaveAttribute("data-dark");
 });
 
+test("auto lets card-mod style the native surface and glass layer", async ({
+  page,
+}) => {
+  await configure(page, "rgba(30,30,30,.9)", "#e6e6e6", false);
+  const card = page.locator("ha-amazing-weather-card");
+  await card.evaluate((el) => {
+    // card-mod inserts a normal style element alongside Lit's adopted sheets.
+    // The theme deliberately replaces its opaque CSS variable with a glass layer.
+    const style = document.createElement("style");
+    style.textContent = `ha-card {
+      background: transparent;
+      color: rgb(221 238 255);
+      backdrop-filter: none;
+      border: 2px solid rgb(100 120 140 / .3);
+      border-radius: 19px;
+      box-shadow: 0 2px 8px rgb(0 0 0 / .2);
+    }
+    ha-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: rgb(28 29 33 / .18);
+      backdrop-filter: blur(10px) saturate(1.2);
+      z-index: -1;
+      border-radius: inherit;
+      pointer-events: none;
+    }`;
+    el.shadowRoot!.append(style);
+  });
+  await expect
+    .poll(() =>
+      card.locator("ha-card").evaluate((el) => {
+        const s = getComputedStyle(el);
+        return {
+          background: s.backgroundColor,
+          text: s.color,
+          radius: s.borderRadius,
+          border: s.borderWidth,
+          shadow: s.boxShadow,
+        };
+      }),
+    )
+    .toEqual({
+      background: "rgba(0, 0, 0, 0)",
+      text: "rgb(221, 238, 255)",
+      radius: "19px",
+      border: "2px",
+      shadow: "rgba(0, 0, 0, 0.2) 0px 2px 8px 0px",
+    });
+  expect(
+    await card
+      .locator("ha-card")
+      .evaluate((el) => getComputedStyle(el, "::before").backdropFilter),
+  ).toBe("blur(10px) saturate(1.2)");
+  await expect(card).toHaveAttribute("data-dark", "");
+  expect((await palette(page)).hero).toBe("none");
+  // Explicit palettes remain an opt-in even when card-mod is installed.
+  await configure(page, "rgba(30,30,30,.9)", "#e6e6e6", false, "light");
+  await expect
+    .poll(async () => (await palette(page)).background)
+    .toBe("rgb(247, 250, 252)");
+  await configure(page, "rgba(30,30,30,.9)", "#e6e6e6", false);
+  await expect
+    .poll(async () => (await palette(page)).background)
+    .toBe("rgba(0, 0, 0, 0)");
+});
+
 test("keeps astronomy above the weather icon, with one accessible entry point at tablet and phone widths", async ({
   page,
 }) => {

@@ -1,4 +1,4 @@
-/*! Amazing Weather Card v0.2.0 | github.com/raunosr/ha-amazing-weather-card
+/*! Amazing Weather Card v0.2.1 | github.com/raunosr/ha-amazing-weather-card
 
 Project and bundled dependency licenses:
 
@@ -539,6 +539,12 @@ var r3=Object.create;var v2=Object.defineProperty;var e3=Object.getOwnPropertyDe
   ha-card {
     display: block;
     overflow: hidden;
+  }
+  /* In auto mode HA owns the surface. Re-declaring its CSS properties here
+     overrides card-mod theme rules because Lit's adopted sheets come last. */
+  :host([data-force-theme="dark"]) ha-card,
+  :host([data-force-theme="light"]) ha-card,
+  ha-card:not(:defined) {
     border-radius: var(--ha-card-border-radius, 24px);
     background: var(--aw-bg);
     color: var(--aw-text);
@@ -593,6 +599,9 @@ var r3=Object.create;var v2=Object.defineProperty;var e3=Object.getOwnPropertyDe
   }
   .hero {
     padding: 6px 20px 12px;
+  }
+  :host([data-force-theme="dark"]) .hero,
+  :host([data-force-theme="light"]) .hero {
     background: radial-gradient(
       ellipse at 90% 22%,
       var(--aw-sky),
@@ -1843,4 +1852,4 @@ var r3=Object.create;var v2=Object.defineProperty;var e3=Object.getOwnPropertyDe
         >
           ${T("right")}
         </button>
-      </div>`}};customElements.get("amazing-weather-chart")||customElements.define("amazing-weather-chart",m2);customElements.get("ha-amazing-weather-card")||customElements.define("ha-amazing-weather-card",d2);window.customCards=window.customCards||[];window.customCards.some(M=>M.type==="ha-amazing-weather-card")||window.customCards.push({type:"ha-amazing-weather-card",name:"Amazing Weather Card",preview:!0,description:"Your weather station, history and forecast in one clear card.",documentationURL:"https://github.com/raunosr/ha-amazing-weather-card",getEntitySuggestion:(M,H)=>H.startsWith("weather.")?{config:{type:"custom:ha-amazing-weather-card",entity:H}}:null});console.info("Amazing Weather Card 0.2.0");
+      </div>`}};customElements.get("amazing-weather-chart")||customElements.define("amazing-weather-chart",m2);customElements.get("ha-amazing-weather-card")||customElements.define("ha-amazing-weather-card",d2);window.customCards=window.customCards||[];window.customCards.some(M=>M.type==="ha-amazing-weather-card")||window.customCards.push({type:"ha-amazing-weather-card",name:"Amazing Weather Card",preview:!0,description:"Your weather station, history and forecast in one clear card.",documentationURL:"https://github.com/raunosr/ha-amazing-weather-card",getEntitySuggestion:(M,H)=>H.startsWith("weather.")?{config:{type:"custom:ha-amazing-weather-card",entity:H}}:null});console.info("Amazing Weather Card 0.2.1");

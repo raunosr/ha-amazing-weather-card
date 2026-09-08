@@ -135,7 +135,7 @@ test("scrolls, selects data, returns to now and opens accessible dialogs", async
   await expect(card.locator("dialog")).toBeVisible();
   expect(await card.locator(".rose-grid li").count()).toBe(8);
   await page.keyboard.press("Escape");
-  await card.locator(".astronomy-strip button").click();
+  await card.locator("button.astronomy-strip").click();
   await expect(card.locator(".astro-moon")).toBeVisible();
   await page.keyboard.press("Escape");
   await card.locator(".body .icon-button").click();
@@ -281,4 +281,45 @@ test("wall mode returns after inactivity and respects an open detail dialog", as
     "aria-pressed",
     "true",
   );
+});
+
+test("rain shares the temperature plot and keeps its own right axis and period units", async ({
+  page,
+}) => {
+  const chart = page.locator("amazing-weather-chart").first();
+  await expect(chart.locator(".caption.rain-axis")).toContainText("mm / h");
+  const layout = await chart.evaluate((el) => {
+    const root = el.shadowRoot!,
+      line = (
+        root.querySelector('[data-series="forecast"]') as SVGGraphicsElement
+      ).getBBox();
+    const bars = [
+      ...root.querySelectorAll<SVGGraphicsElement>(".rain-bar"),
+    ].map((el) => el.getBBox());
+    const axis = root.querySelector(".tick.rain-axis")!.getBoundingClientRect();
+    const scroll = root.querySelector(".scroll")!.getBoundingClientRect();
+    return {
+      overlap: bars.some(
+        (b) => b.y < line.y + line.height && b.y + b.height > line.y,
+      ),
+      axisLeft: axis.left,
+      plotRight: scroll.right,
+    };
+  });
+  expect(layout.overlap).toBe(true);
+  expect(layout.axisLeft).toBeGreaterThanOrEqual(layout.plotRight - 1);
+  await page
+    .locator(".body .ranges")
+    .getByRole("button", { name: "7 pv", exact: true })
+    .click();
+  await expect(chart.locator(".caption.rain-axis")).toContainText("mm / vrk");
+  await page
+    .locator(".body .ranges")
+    .getByRole("button", { name: "24 h", exact: true })
+    .click();
+  await chart.evaluate((el) => {
+    const c = el as HTMLElement & { points: { time: number; end: number }[] };
+    c.points = c.points.map((p) => ({ ...p, end: p.time + 6 * 3600000 }));
+  });
+  await expect(chart.locator(".caption.rain-axis")).toContainText("mm / jakso");
 });

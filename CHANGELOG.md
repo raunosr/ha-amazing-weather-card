@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.2.0 — 2026-09-08
+
+- Fix automatic theme contrast when the dashboard theme differs from the HA profile mode, including translucent and gradient themes and live theme changes.
+- Replace the bright hero glow with a subtle transparent tint.
+- Combine temperature and rainfall in one plot, with a right-hand rain scale and a reserved axis gutter. Day views keep temperature ranges and rain bars side by side within each day.
+- Move sunrise, sunset and moon illumination above the weather icon; combine wind-rose access with chart navigation and tighten vertical spacing.
+- Animate rain, snow and hail separately from the cloud; make cloud, sun and moon motion easier to see while respecting reduced motion.
+- Keep forecast icons still and distinguish cloud and precipitation colours.
+- Add theme, astronomy-layout and animation browser checks plus an icon selector in the local demo.
+- Document HACS's shared dashboard-card category icon; repository logos cannot override it.
+
 ## 0.1.0 — 2026-09-08
 
 Initial public release.

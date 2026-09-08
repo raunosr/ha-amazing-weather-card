@@ -96,7 +96,7 @@ See [all configuration options](docs/configuration.md), including language, them
 - A `weather.*` entity supporting **hourly and/or daily forecasts**. The card subscribes to Home Assistant's forecast API; it does not depend on the old `forecast` state attribute.
 - Ten days are shown only when the provider supplies ten days. Shorter forecasts are labelled with their actual available length. Twice-daily-only forecasts are not supported in this release.
 - Optional `sensor.*` entities with their proper units, and **recorder history** for measured charts, daily extrema, pressure trends and the wind rose. No extra integration is required for astronomy.
-- This first release has automated data and browser tests against a simulated Home Assistant interface. **It has not yet been verified against a live Home Assistant installation.** Provider-specific behaviour and the real HACS installation path still need field validation.
+- Automated data and browser tests cover the Home Assistant interfaces, production bundle, themes and responsive layouts. Verify the selected provider's fields and sensor units when configuring your own installation.
 
 ## Manual installation
 

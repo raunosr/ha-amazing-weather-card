@@ -14,6 +14,10 @@ Kortti yhdistää oman sääasemasi mittaukset, historian ja sääennusteen. Tum
 
 Tämä on HACS-yhteensopiva mukautettu tietovarasto. Kortti ei vielä kuulu HACS:n oletushakuun ilman tietovaraston lisäämistä.
 
+HACS näyttää kojelautakorteille laatikkokuvakkeen. Projektin oma logo ei korvaa tätä HACS:n kategoriakuvaketta; asennuksessa ei ole tämän vuoksi vikaa.
+
+Valitse kortin teemaksi **Automaattinen / HA-teema** (`theme: auto`), kun haluat sen käyttävän kojelautasi värejä ja läpinäkyvyyttä. `dark` ja `light` käyttävät kortin omia värejä. Sääikonin animaatio toimii, kun `animated: true`; laitteen vähennetyn liikkeen asetus pysäyttää animaatiot.
+
 Jos kortti ei ilmesty valikkoon, tarkista kojelaudan resurssit. Seuraavan osoitteen tulee olla mukana kerran tyypillä **JavaScript Module**:
 
 ```text
@@ -85,6 +89,6 @@ Auringon ajat ja kuun tiedot lasketaan Home Assistantin sijainnille. Päivämä�
 
 Historia vaatii, että Home Assistant tallentaa valitut anturit recorderilla ja käyttäjällä on pääsy niihin. Puuttuva tieto näkyy merkkinä `—`. Nolla tarkoittaa oikeasti nollaa. Jos oma anturi on valittu ja yhteys katkeaa, kortti ei vaihda lukemaa huomaamatta sääpalvelun arvioon.
 
-Ensimmäinen versio on testattu automaattisesti simuloiduilla Home Assistant -tiedoilla ja selaimessa. Sitä ei ole vielä kokeiltu oikeassa Home Assistant -asennuksessa. Oman palvelusi ennusteet, anturit ja HACS-asennus tulee varmistaa käyttöönotossa.
+Automaattiset testit kattavat tiedonkäsittelyn, selaimen käyttöliittymän, teemat ja julkaistavan tiedoston. Oman palvelusi ennustetiedot ja anturien yksiköt kannattaa tarkistaa käyttöönotossa.
 
 [Kaikki asetukset englanniksi](configuration.md) · [Datan käsittely ja suunnitteluratkaisut](data-and-design.md) · [Ilmoita ongelmasta](https://github.com/raunosr/ha-amazing-weather-card/issues)

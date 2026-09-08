@@ -48,8 +48,13 @@ export const iconStyles = css`
   .weather-symbol.partly .cloud-shape {
     inset: 25% 15% 0 0;
   }
-  .weather-symbol.wet {
-    color: var(--aw-rain);
+  .weather-symbol.precipitating .cloud-shape {
+    inset: -7% 0 22%;
+  }
+  .weather-symbol .precipitation,
+  .weather-symbol .lightning {
+    position: absolute;
+    inset: 0;
   }
   .weather-symbol.unknown {
     opacity: 0.6;
@@ -68,7 +73,7 @@ export const cardStyles = css`
     --aw-muted: var(--secondary-text-color, #53697c);
     --aw-line: var(--divider-color, #d6e2ec);
     --aw-fill: #e9f0f6;
-    --aw-sky: #e0eef6;
+    --aw-sky: rgb(120 177 203 / 15%);
     --aw-temp: #087869;
     --aw-rain: #2376b8;
     --aw-wind: #896119;
@@ -81,7 +86,7 @@ export const cardStyles = css`
   }
   :host([data-dark]) {
     --aw-fill: #1d3047;
-    --aw-sky: #25435c;
+    --aw-sky: rgb(110 169 203 / 12%);
     --aw-temp: #9fe5cf;
     --aw-rain: #86c4ff;
     --aw-wind: #e8c28a;
@@ -118,6 +123,7 @@ export const cardStyles = css`
     border: var(--ha-card-border-width, 1px) solid
       var(--ha-card-border-color, var(--aw-line));
     box-shadow: var(--ha-card-box-shadow, none);
+    backdrop-filter: var(--ha-card-backdrop-filter, none);
   }
   button {
     font: inherit;
@@ -140,7 +146,7 @@ export const cardStyles = css`
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    padding: 18px 24px 0;
+    padding: 14px 20px 0;
   }
   .brand {
     font-size: 15px;
@@ -164,7 +170,7 @@ export const cardStyles = css`
     flex-shrink: 0;
   }
   .hero {
-    padding: 14px 24px 18px;
+    padding: 6px 20px 12px;
     background: radial-gradient(
       ellipse at 90% 22%,
       var(--aw-sky),
@@ -205,7 +211,10 @@ export const cardStyles = css`
     justify-content: space-between;
     gap: 12px;
     align-items: flex-start;
-    margin-top: 4px;
+    margin-top: 0;
+  }
+  .current-readings {
+    min-width: 0;
   }
   .temperature {
     font-size: 68px;
@@ -253,7 +262,8 @@ export const cardStyles = css`
     gap: 4px;
     font-size: 13px;
     text-align: right;
-    max-width: 130px;
+    flex-shrink: 0;
+    max-width: 150px;
   }
   .condition .weather-symbol {
     width: 72px;
@@ -268,7 +278,7 @@ export const cardStyles = css`
     font-size: 19px;
     line-height: 1.4;
     font-weight: 500;
-    margin: 15px 0 0;
+    margin: 10px 0 0;
     max-width: 580px;
   }
   .status {
@@ -280,8 +290,8 @@ export const cardStyles = css`
   .day-stats {
     display: grid;
     grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.2fr);
-    gap: 20px;
-    padding: 13px 24px;
+    gap: 16px;
+    padding: 9px 20px;
     border-top: 1px solid var(--aw-line);
   }
   .day-extrema {
@@ -327,10 +337,11 @@ export const cardStyles = css`
     grid-template-columns: 1.2fr 1fr 1fr;
     gap: 10px;
     border-top: 1px solid var(--aw-line);
-    padding: 5px 24px;
+    padding: 0 20px;
+    border-bottom: 1px solid var(--aw-line);
   }
   .sensor {
-    min-height: 48px;
+    min-height: 44px;
     text-align: left;
     padding: 4px 0;
   }
@@ -349,25 +360,26 @@ export const cardStyles = css`
   }
   .astronomy-strip {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 24px;
-    gap: 8px;
-    border-bottom: 1px solid var(--aw-line);
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 2px 0;
+    gap: 3px;
+    color: var(--aw-muted);
     font-size: 11px;
     min-height: 44px;
+    border-radius: 6px;
   }
-  .astronomy-strip > span,
-  .astronomy-strip button {
+  .sun-times,
+  .sun-times > span,
+  .moon-phase {
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 4px;
     white-space: nowrap;
   }
-  .astronomy-strip button {
-    min-height: 44px;
-    min-width: 44px;
-    padding: 0;
+  .sun-times {
+    gap: 10px;
   }
   .astronomy-strip .icon {
     color: var(--aw-sun);
@@ -375,18 +387,18 @@ export const cardStyles = css`
     height: 16px;
   }
   .astronomy-strip .mini-moon {
-    width: 18px;
-    height: 18px;
+    width: 15px;
+    height: 15px;
   }
   .body {
-    padding: 14px 24px 0;
+    padding: 9px 20px 0;
   }
   .toolbar {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 5px;
-    margin-bottom: 12px;
+    margin-bottom: 8px;
   }
   .ranges,
   .toolbar-actions {
@@ -434,7 +446,7 @@ export const cardStyles = css`
     gap: 8px;
     flex-wrap: wrap;
     font-size: 12px;
-    margin-bottom: 12px;
+    margin-bottom: 8px;
   }
   .legend {
     display: flex;
@@ -462,33 +474,23 @@ export const cardStyles = css`
     padding: 20px 0 28px;
     line-height: 1.6;
   }
-  .rose-launch {
-    border-top: 1px solid var(--aw-line);
-    padding: 0 24px;
-  }
-  .rose-launch button {
-    min-height: 49px;
-    width: 100%;
+  .rose-button {
+    min-height: 44px;
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 10px;
+    justify-content: center;
+    gap: 7px;
     padding: 8px 0;
-    font-size: 13px;
+    font-size: 12px;
     text-align: left;
   }
-  .rose-launch span {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-  }
-  .rose-launch small {
+  .rose-button small {
     font-size: 11px;
     color: var(--aw-muted);
   }
   .footer {
     border-top: 1px solid var(--aw-line);
-    padding: 11px 24px 13px;
+    padding: 8px 20px;
     color: var(--aw-muted);
     font-size: 11px;
     display: flex;
@@ -652,33 +654,52 @@ export const cardStyles = css`
     clip-path: inset(50%);
   }
   :host([data-animated]) .condition .cloud-shape {
-    animation: aw-drift 8s ease-in-out infinite alternate;
+    animation: aw-drift 4s ease-in-out infinite alternate;
   }
   :host([data-animated]) .condition .solar {
-    animation: aw-sun 14s ease-in-out infinite alternate;
+    animation: aw-sun 28s linear infinite;
+  }
+  :host([data-animated]) .condition .lunar {
+    animation: aw-moon 5s ease-in-out infinite alternate;
+  }
+  :host([data-animated]) .condition .falling {
+    animation: aw-fall 1.8s linear infinite;
+    animation-delay: var(--fall-delay);
+  }
+  :host([data-animated]) .condition .snowflake {
+    animation-duration: 3s;
   }
   @keyframes aw-drift {
     from {
-      transform: translateX(-1.5px);
+      transform: translate(-2px, 0);
     }
     to {
-      transform: translateX(2px);
+      transform: translate(3px, -1px);
     }
   }
   @keyframes aw-sun {
     from {
-      transform: rotate(-6deg);
+      transform: rotate(0deg);
     }
     to {
-      transform: rotate(6deg);
+      transform: rotate(360deg);
     }
+  }
+  @keyframes aw-fall {
+    0% { transform: translate(1px, -3px); opacity: 0; }
+    20%, 70% { opacity: 1; }
+    100% { transform: translate(-2px, 7px); opacity: 0; }
+  }
+  @keyframes aw-moon {
+    from { transform: translateY(0); }
+    to { transform: translateY(-2px); }
   }
   @container (max-width:480px) {
     .header {
-      padding: 16px 16px 0;
+      padding: 12px 16px 0;
     }
     .hero {
-      padding: 12px 16px 15px;
+      padding: 4px 16px 10px;
     }
     .brand {
       font-size: 14px;
@@ -687,7 +708,8 @@ export const cardStyles = css`
       font-size: 11px;
     }
     .temperature {
-      font-size: 60px;
+      font-size: clamp(42px, 14cqw, 60px);
+      letter-spacing: -3px;
     }
     .temperature small {
       font-size: 20px;
@@ -697,14 +719,14 @@ export const cardStyles = css`
       height: 54px;
     }
     .condition {
-      max-width: 95px;
+      max-width: 140px;
       font-size: 12px;
     }
     .summary {
       font-size: 17px;
     }
     .day-stats {
-      padding: 12px 16px;
+      padding: 8px 16px;
       gap: 14px;
     }
     .day-extrema strong {
@@ -718,18 +740,14 @@ export const cardStyles = css`
       font-size: 15px;
     }
     .sensors {
-      padding: 5px 16px;
+      padding: 0 16px;
       gap: 6px;
     }
     .sensor strong {
       font-size: 12px;
     }
-    .astronomy-strip {
-      padding: 0 16px;
-      gap: 5px;
-    }
     .body {
-      padding: 13px 16px 0;
+      padding: 8px 16px 0;
     }
     .ranges {
       gap: 2px;
@@ -744,11 +762,8 @@ export const cardStyles = css`
     .expand-label {
       display: none;
     }
-    .rose-launch {
-      padding: 0 16px;
-    }
     .footer {
-      padding: 10px 16px 12px;
+      padding: 8px 16px;
     }
     dialog {
       padding: 15px;

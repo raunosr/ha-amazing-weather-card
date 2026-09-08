@@ -61,7 +61,7 @@ test("shows weather-only sources and polar no-event astronomy at narrow width", 
       el.shadowRoot!.querySelector("ha-card")!.scrollWidth > el.clientWidth,
   );
   expect(overflow).toBe(false);
-  await card.locator(".astronomy-strip button").click();
+  await card.locator("button.astronomy-strip").click();
   await expect(card.locator(".astro-times")).toContainText("No event today");
 });
 

@@ -44,6 +44,7 @@ import {
   type Unsubscribe,
 } from "./types";
 import type { AmazingWeatherChart } from "./chart";
+import { CardTheme } from "./theme";
 
 type DialogKind = "chart" | "wind" | "astro" | "station" | null;
 export class AmazingWeatherCard extends LitElement {
@@ -83,6 +84,10 @@ export class AmazingWeatherCard extends LitElement {
   private _poll?: ReturnType<typeof setInterval>;
   private _resetTimer?: ReturnType<typeof setTimeout>;
   private _dialogTrigger?: HTMLElement;
+  private _theme = new CardTheme(this, () => ({
+    config: this._config,
+    hass: this._hass,
+  }));
 
   setConfig(input: unknown) {
     const config = validateConfig(input),
@@ -136,7 +141,7 @@ export class AmazingWeatherCard extends LitElement {
     };
   }
   getCardSize() {
-    return Math.ceil((this.offsetHeight || 950) / 50);
+    return Math.ceil((this.offsetHeight || 850) / 50);
   }
   getGridOptions() {
     return { columns: 12, min_columns: 6 };
@@ -366,12 +371,7 @@ export class AmazingWeatherCard extends LitElement {
   }
   protected updated(_changed: PropertyValues) {
     if (!this._config || !this._hass) return;
-    const dark =
-      this._config.theme === "dark" ||
-      (this._config.theme === "auto" && !!this._hass.themes?.darkMode);
-    this.toggleAttribute("data-dark", dark);
     this.toggleAttribute("data-animated", !!this._config.animated);
-    this.setAttribute("data-force-theme", this._config.theme || "auto");
     const dialog = this.renderRoot.querySelector("dialog");
     if (this._dialog && dialog && !dialog.open) dialog.showModal();
   }
@@ -432,11 +432,17 @@ export class AmazingWeatherCard extends LitElement {
             .location=${a ? { lat: a.lat, lon: a.lon } : undefined}
             @view-changed=${this.chartMoved}
             @chart-interaction=${this.scheduleReturn}
-          ></amazing-weather-chart
+          >${!large ? this.roseButton("navigation") : nothing}</amazing-weather-chart
           >${large && this._range !== 24 ? html`<p class="dialog-note">${this.t("modelHint")}</p>` : nothing}`
       : html`<p class="empty">
           ${this._forecast.loading ? this.t("loading") : this.t(this._range === 24 ? "noHourly" : "noDaily")}
-        </p>`;
+        </p>${!large ? this.roseButton() : nothing}`;
+  }
+
+  private roseButton(slot = "") {
+    return html`<button type="button" class="rose-button" slot=${slot}
+      aria-haspopup="dialog" @click=${(e: Event) => this.openDialog("wind", e)}
+      >${icon("compass")}${this.t("rose")} <small>24 h</small>${icon("right")}</button>`;
   }
 
   protected render() {
@@ -495,6 +501,8 @@ export class AmazingWeatherCard extends LitElement {
           >
         </header>
         <section class="hero" aria-label=${t("now")}>
+          <div class="weather-now">
+            <div class="current-readings">
           <button
             type="button"
             class="live ${latest.stale || latest.unavailable ? "old" : ""}"
@@ -503,8 +511,6 @@ export class AmazingWeatherCard extends LitElement {
             ${latest.stale ? t("lastReading") : t("now")} ·
             ${source}${icon("info")}
           </button>
-          <div class="weather-now">
-            <div>
               <div class="temperature">
                 ${this.n(latest.value)}°<small>${unit.replace("°", "")}</small>
               </div>
@@ -518,6 +524,21 @@ export class AmazingWeatherCard extends LitElement {
               </p>
             </div>
             <div class="condition">
+              ${
+                a
+                  ? html`<button
+                type="button" class="astronomy-strip"
+                aria-label=${t("astronomy") + ": " + t("rise") + " " + this.time(a.sunrise) + ", " + t("set") + " " + this.time(a.sunset) + ", " + moonPhaseName(a.phase, this.language) + ", " + this.n(a.fraction * 100, 0) + " % " + t("illuminated")}
+                @click=${(e: Event) => this.openDialog("astro", e)}
+              >
+                <span class="sun-times">
+                  <span title=${t("rise") + (Number.isFinite(a.sunrise) ? "" : ": " + t("noEvent"))}>${icon("rise")}${this.time(a.sunrise)}</span>
+                  <span title=${t("set") + (Number.isFinite(a.sunset) ? "" : ": " + t("noEvent"))}>${icon("set")}${this.time(a.sunset)}</span>
+                </span>
+                <span class="moon-phase"><span class="mini-moon">${moon(a.fraction, a.phase)}</span>${this.n(a.fraction * 100, 0)} %</span>
+              </button>`
+                  : nothing
+              }
               ${weatherIcon(current.condition, this._now, a ? { lat: a.lat, lon: a.lon } : undefined)}<span
                 >${conditionText(current.condition, this.language)}</span
               ><small>${t("conditionEstimate")}</small>
@@ -585,26 +606,6 @@ export class AmazingWeatherCard extends LitElement {
             >
           </button>
         </div>
-        ${
-          a
-            ? html`<div class="astronomy-strip" aria-label=${t("astronomy")}>
-              <span title=${Number.isFinite(a.sunrise) ? t("rise") : t("rise") + ": " + t("noEvent")}
-                >${icon("rise")}${t("rise")}
-                ${Number.isFinite(a.sunrise) ? this.time(a.sunrise) : "—"}</span
-              ><span title=${Number.isFinite(a.sunset) ? t("set") : t("set") + ": " + t("noEvent")}
-                >${icon("set")}${t("set")}
-                ${Number.isFinite(a.sunset) ? this.time(a.sunset) : "—"}</span
-              ><button
-                type="button"
-                aria-label=${moonPhaseName(a.phase, this.language) + ", " + this.n(a.fraction * 100, 0) + " % " + t("illuminated")}
-                @click=${(e: Event) => this.openDialog("astro", e)}
-              >
-                <span class="mini-moon">${moon(a.fraction, a.phase)}</span
-                >${this.n(a.fraction * 100, 0)} %
-              </button>
-            </div>`
-            : nothing
-        }
         <section class="body" aria-label=${t("forecast")}>
           <div class="toolbar">
             ${this.ranges()}
@@ -634,18 +635,8 @@ export class AmazingWeatherCard extends LitElement {
             >${this._range === 24 ? html`<div class="legend"><span>${t("measured")}</span><span class="forecast">${t("forecast")}</span></div>` : nothing}
           </div>
           ${this.chart()}
-          ${this._historyError ? html`<p class="status">${t("historyError")}</p>` : nothing}${Object.values(this._forecast.errors).some(Boolean) ? html`<p class="status">${t("forecastError")}</p>` : nothing}${this.daily.length > 0 && this.daily.length < 10 ? html`<p class="dialog-note">${t("forecastLength")}: ${this.daily.length} ${t("days")}.</p>` : nothing}
+          ${this._historyError ? html`<p class="status">${t("historyError")}</p>` : nothing}${Object.values(this._forecast.errors).some(Boolean) ? html`<p class="status">${t("forecastError")}</p>` : nothing}
         </section>
-        <div class="rose-launch">
-          <button
-            type="button"
-            aria-haspopup="dialog"
-            @click=${(e: Event) => this.openDialog("wind", e)}
-          >
-            <span>${icon("compass")}${t("rose")} <small>24 h</small></span
-            >${icon("right")}
-          </button>
-        </div>
         <footer class="footer">
           <span>${source} · ${this.time(reportedAt(latest.entity))}</span
           ><span>${t("forecast")} · ${updated ? this.time(updated) : "—"}</span

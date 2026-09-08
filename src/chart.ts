@@ -94,7 +94,7 @@ export class AmazingWeatherChart extends LitElement {
       }
       .scroll {
         position: relative;
-        width: 100%;
+        width: calc(100% - 28px);
         overflow-x: auto;
         overflow-y: hidden;
         scrollbar-width: thin;
@@ -134,6 +134,10 @@ export class AmazingWeatherChart extends LitElement {
       .chart .rain-value {
         fill: var(--aw-rain);
         font-size: 11px;
+      }
+      .chart .rain-bar {
+        fill: var(--aw-rain);
+        opacity: 0.4;
       }
       .symbols,
       .winds,
@@ -206,6 +210,16 @@ export class AmazingWeatherChart extends LitElement {
         color: var(--aw-muted);
         background: var(--aw-bg);
       }
+      .rain-axis {
+        left: auto;
+        right: 0;
+        text-align: right;
+        color: var(--aw-rain);
+        padding: 0 0 0 5px;
+      }
+      .temperature-axis {
+        color: var(--aw-temp);
+      }
       .tooltip {
         position: absolute;
         top: 108px;
@@ -237,7 +251,7 @@ export class AmazingWeatherChart extends LitElement {
         justify-content: space-between;
         gap: 5px;
         min-height: 44px;
-        margin: 5px 0 8px;
+        margin: 0;
       }
       .navigation button {
         display: flex;
@@ -284,8 +298,8 @@ export class AmazingWeatherChart extends LitElement {
   private observeSize() {
     this._resize?.disconnect();
     this._resize = new ResizeObserver((entries) => {
-      const width = entries[0]?.contentRect.width;
-      if (width && Math.abs(width - this._width) > 0.5) this._width = width;
+      const width = (entries[0]?.contentRect.width || 0) - 28;
+      if (width > 0 && Math.abs(width - this._width) > 0.5) this._width = width;
     });
     this._resize.observe(this);
   }
@@ -419,17 +433,19 @@ export class AmazingWeatherChart extends LitElement {
       min = values.length ? Math.floor(Math.min(...values)) - 1 : 0,
       max = values.length ? Math.ceil(Math.max(...values)) + 1 : 1;
     const top = daily ? 116 : 98,
-      bottom = daily ? 204 : 188,
-      rainTop = bottom + 49,
-      rainBottom = rainTop + 46,
-      windTop = rainBottom + 37;
+      bottom = daily ? 212 : 182,
+      rainTop = top,
+      rainBottom = bottom,
+      windTop = bottom + (daily ? 48 : 32);
     const rainMax = Math.max(
       daily ? 2 : 1,
-      Math.ceil(Math.max(0, ...this.points.map((p) => p.rain ?? 0)) * 2) / 2,
+      Math.ceil(
+        Math.max(0, ...this.points.map((p) => p.rain ?? 0)) * 1.25 * 2,
+      ) / 2,
     );
     return {
       width,
-      height: windTop + 30,
+      height: windTop + 24,
       step,
       top,
       bottom,
@@ -486,6 +502,7 @@ export class AmazingWeatherChart extends LitElement {
     return html`<div class="frame">
         <div
           class="scroll"
+          title=${t(this.daily ? "scrollDays" : "scrollHours")}
           @scroll=${this.scrollChanged}
           @pointerdown=${this.pointerDown}
           @pointermove=${this.pointerMove}
@@ -513,14 +530,24 @@ export class AmazingWeatherChart extends LitElement {
               </title>
               ${!this.daily && this.location ? this.points.map((p) => (SunCalc.getPosition(new Date(p.time), this.location!.lat, this.location!.lon).altitude < 0 ? svg`<rect x=${g.x(p.time)} y=${g.top - 5} width=${Math.max(1, Math.min(g.width - g.x(p.time), (g.step * (p.end - p.time)) / HOUR))} height=${g.rainBottom - g.top + 5} fill="var(--aw-night)" opacity=".4"></rect>` : nothing)) : nothing}
               ${hasTemperature ? temperatureTicks.map((value) => svg`<line x1="0" x2=${g.width} y1=${g.y(value)} y2=${g.y(value)} stroke="var(--aw-line)" opacity=".6"></line>`) : nothing}
-              ${[g.rainTop, g.rainBottom].map((y) => svg`<line x1="0" x2=${g.width} y1=${y} y2=${y} stroke="var(--aw-line)" opacity=".6"></line>`)}
+              <line x1="0" x2=${g.width} y1=${g.bottom} y2=${g.bottom} stroke="var(--aw-line)" opacity=".6"></line>
               ${this.points.map((p) => {
-                const x = g.x(p.time);
+                const x = g.x(p.time) + (this.daily ? 14 : 0);
+                return p.rain === null
+                  ? svg`<text class="rain-value" x=${x} y=${g.bottom - 5} text-anchor="middle">—</text>`
+                  : p.rain > 0
+                    ? svg`<rect class="rain-bar" x=${x - (this.daily ? 5 : 8)} y=${g.ry(p.rain)} width=${this.daily ? 10 : 16} height=${g.bottom - g.ry(p.rain)} rx="3"></rect><text class="rain-value" x=${x} y=${g.ry(p.rain) - 7} text-anchor="middle">${n(p.rain)}</text>`
+                    : this.daily
+                      ? svg`<text class="rain-value" x=${x} y=${g.bottom - 5} text-anchor="middle">0</text>`
+                      : svg`<circle cx=${x} cy=${g.bottom} r="1.3" fill="var(--aw-rain)" opacity=".65"></circle>`;
+              })}
+              ${this.points.map((p) => {
+                const x = g.x(p.time),
+                  tx = x - 12;
                 return svg`
               <text class="time" x=${x} y="16" text-anchor="middle">${this.daily ? this.dayLabel(p.time) : formatTime(p.time, this.language, this.zone)}</text>
               ${this.daily || new Intl.DateTimeFormat("en-GB", { timeZone: this.zone, hour: "2-digit", hour12: false }).format(p.time) === "00" ? svg`<text x=${x} y="31" text-anchor="middle" style="font-size:11px">${new Intl.DateTimeFormat(this.language === "fi" ? "fi-FI" : "en-GB", { timeZone: this.zone, day: "numeric", month: "numeric" }).format(p.time)}</text>` : nothing}
-              ${this.daily && p.temperature !== null ? svg`${p.low !== null ? svg`<line x1=${x} x2=${x} y1=${g.y(p.temperature)} y2=${g.y(p.low)} stroke="var(--aw-temp)" stroke-width="7" stroke-linecap="round"></line>` : svg`<circle cx=${x} cy=${g.y(p.temperature)} r="3.5" fill="var(--aw-temp)"></circle>`}<text class="value" x=${x} y=${g.y(p.temperature) - 11} text-anchor="middle">${n(p.temperature, 0)}°</text><text x=${x} y=${p.low !== null ? g.y(p.low) + 19 : g.bottom + 19} text-anchor="middle">${p.low !== null ? n(p.low, 0) + "°" : "—"}</text>` : nothing}
-              ${p.rain === null ? svg`<text x=${x} y=${g.rainBottom - 5} text-anchor="middle">—</text>` : p.rain > 0 ? svg`<rect x=${x - 8} y=${g.ry(p.rain)} width="16" height=${g.rainBottom - g.ry(p.rain)} rx="3" fill="var(--aw-rain)" opacity=".75"></rect><text class="rain-value" x=${x} y=${g.ry(p.rain) - 7} text-anchor="middle">${n(p.rain)}</text>` : this.daily ? svg`<text x=${x} y=${g.rainBottom - 5} text-anchor="middle">0</text>` : svg`<circle cx=${x} cy=${g.rainBottom} r="1.3" fill="var(--aw-muted)" opacity=".5"></circle>`}
+              ${this.daily && p.temperature !== null ? svg`${p.low !== null ? svg`<line x1=${tx} x2=${tx} y1=${g.y(p.temperature)} y2=${g.y(p.low)} stroke="var(--aw-temp)" stroke-width="7" stroke-linecap="round"></line>` : svg`<circle cx=${tx} cy=${g.y(p.temperature)} r="3.5" fill="var(--aw-temp)"></circle>`}<text class="value" x=${tx} y=${g.y(p.temperature) - 11} text-anchor="middle">${n(p.temperature, 0)}°</text><text x=${tx} y=${p.low !== null ? g.y(p.low) + 19 : g.bottom + 19} text-anchor="middle">${p.low !== null ? n(p.low, 0) + "°" : "—"}</text>` : nothing}
             `;
               })}
               ${
@@ -561,11 +588,10 @@ export class AmazingWeatherChart extends LitElement {
           </div>
         </div>
         <div class="axes" aria-hidden="true">
-          <span class="caption" style="top:76px"
-            >${t("temperature")} ·
-            ${this.daily ? t("lowHigh") + " " : ""}${this.unit}</span
+          <span class="caption temperature-axis" style="top:76px"
+            >${t("temperature")} · ${this.unit}</span
           >
-          <span class="caption" style="top:${g.rainTop - 36}px"
+          <span class="caption rain-axis" style="top:76px"
             >${t("rain")} · mm /
             ${this.daily ? (this.language === "fi" ? "vrk" : "day") : hourlyRain ? "h" : this.language === "fi" ? "jakso" : "period"}</span
           >
@@ -573,8 +599,8 @@ export class AmazingWeatherChart extends LitElement {
             >${t(this.daily ? "dayWind" : "wind")} · m/s ·
             ${t("direction")}</span
           >
-          ${!this.daily && hasTemperature ? temperatureTicks.map((value) => html`<span class="tick" style="top:${g.y(value) - 7}px">${n(value, 0)}°</span>`) : nothing}
-          ${!this.daily ? html`<span class="tick" style="top:${g.rainTop - 7}px">${n(g.rainMax)}</span><span class="tick" style="top:${g.rainBottom - 7}px">0</span>` : nothing}
+          ${!this.daily && hasTemperature ? temperatureTicks.map((value) => html`<span class="tick temperature-axis" style="top:${g.y(value) - 7}px">${n(value, 0)}°</span>`) : nothing}
+          <span class="tick rain-axis" style="top:${g.rainTop - 7}px">${n(g.rainMax)}</span><span class="tick rain-axis" style="top:${g.bottom - 7}px">0</span>
         </div>
         ${selected ? html`<div class="tooltip" role="status" style="left:${Math.max(5, Math.min(this._width - 195, g.x(selected.time) - this._left - 95))}px"><strong>${formatDay(selected.time, this.language, this.zone)} ${this.daily ? "" : formatTime(selected.time, this.language, this.zone)}</strong><span>${t(selected.kind)} · ${n(selected.temperature)} ${this.unit}</span>${this.daily ? html`<span>${t("lowHigh")} ${n(selected.low)} – ${n(selected.temperature)}°</span>` : nothing}${selected.condition ? html`<span>${conditionText(selected.condition, this.language)}</span>` : nothing}<span>${selected.rain === null ? t("rainMissing") : t("rain") + " " + n(selected.rain) + " mm"}${!this.daily ? " / " + n((selected.end - selected.time) / HOUR, 0) + " h" : ""}</span>${selected.probability !== null ? html`<span>${n(selected.probability, 0)} %</span>` : nothing}<span>${t("wind")} ${n(selected.wind)} m/s ${directionText(selected.direction, this.language)}</span>${selected.gust !== null ? html`<span>${t("gusts")} ${n(selected.gust)} m/s</span>` : nothing}</div>` : nothing}
       </div>
@@ -586,7 +612,7 @@ export class AmazingWeatherChart extends LitElement {
           @click=${() => this.pan(-1)}
         >
           ${icon("left")}</button
-        ><span>${t(this.daily ? "scrollDays" : "scrollHours")}</span
+        ><slot name="navigation"><span>${t(this.daily ? "scrollDays" : "scrollHours")}</span></slot
         ><button
           type="button"
           aria-label=${t("later")}

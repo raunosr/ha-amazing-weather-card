@@ -12,6 +12,9 @@ let fixture = createFixture(),
 const select = (id: string) => document.getElementById(id) as HTMLSelectElement;
 function update() {
   fixture = createFixture(select("scenario").value as Scenario);
+  const condition = select("condition").value;
+  if (condition !== "sample")
+    fixture.hass.states[demoConfig.entity]!.state = condition;
   config = {
     ...demoConfig,
     theme: select("theme").value as CardConfig["theme"],
@@ -28,7 +31,7 @@ function update() {
 }
 update();
 document.getElementById("card")!.append(card);
-for (const id of ["scenario", "theme", "language", "display"])
+for (const id of ["scenario", "condition", "theme", "language", "display"])
   select(id).addEventListener("change", update);
 document.getElementById("edit")!.addEventListener("click", async () => {
   const container = document.getElementById("editor")!;

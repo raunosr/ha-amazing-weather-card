@@ -32,20 +32,20 @@ Wind values are displayed in **m/s**, precipitation in **mm**, pressure in **hPa
 
 ## Appearance and behaviour
 
-| Option             | Default                     | Values / meaning                                                                              |
-| ------------------ | --------------------------- | --------------------------------------------------------------------------------------------- |
-| `name`             | Localized “Weather at home” | Plain text heading.                                                                           |
-| `language`         | `auto`                      | `auto`, `fi`, `en`. Auto follows the user's HA language, with English fallback.               |
-| `theme`            | `auto`                      | `auto`, `dark`, `light`. Auto uses HA theme variables and dark-mode preference.               |
-| `temperature_unit` | `auto`                      | `auto`, `°C`, `°F`.                                                                           |
-| `animated`         | `true`                      | Gentle movement of the main weather icon; disabled by the device's reduced-motion preference. |
-| `default_range`    | `24`                        | `24`, `7` or `10`. These mean hours, days and days respectively.                              |
-| `history_hours`    | `24`                        | `0`–`72`. `0` disables recorder requests and measured history.                                |
-| `stale_after`      | `60`                        | Minutes, `0`–`1440`. `0` disables old-reading indicators.                                     |
-| `wall_mode`        | `false`                     | Return to Now after inactivity.                                                               |
-| `return_after`     | `60`                        | Seconds of inactivity, `15`–`600`; used only in wall mode.                                    |
-| `latitude`         | HA latitude                 | Optional override, −90 to 90. Set together with longitude.                                    |
-| `longitude`        | HA longitude                | Optional override, −180 to 180. Set together with latitude.                                   |
+| Option             | Default                     | Values / meaning                                                                                                                                  |
+| ------------------ | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `name`             | Localized “Weather at home” | Plain text heading.                                                                                                                               |
+| `language`         | `auto`                      | `auto`, `fi`, `en`. Auto follows the user's HA language, with English fallback.                                                                   |
+| `theme`            | `auto`                      | `auto`, `dark`, `light`. Auto follows the actual dashboard surface/text, including translucent themes; explicit modes use the card's own palette. |
+| `temperature_unit` | `auto`                      | `auto`, `°C`, `°F`.                                                                                                                               |
+| `animated`         | `true`                      | Gentle movement of the main weather icon; disabled by the device's reduced-motion preference.                                                     |
+| `default_range`    | `24`                        | `24`, `7` or `10`. These mean hours, days and days respectively.                                                                                  |
+| `history_hours`    | `24`                        | `0`–`72`. `0` disables recorder requests and measured history.                                                                                    |
+| `stale_after`      | `60`                        | Minutes, `0`–`1440`. `0` disables old-reading indicators.                                                                                         |
+| `wall_mode`        | `false`                     | Return to Now after inactivity.                                                                                                                   |
+| `return_after`     | `60`                        | Seconds of inactivity, `15`–`600`; used only in wall mode.                                                                                        |
+| `latitude`         | HA latitude                 | Optional override, −90 to 90. Set together with longitude.                                                                                        |
+| `longitude`        | HA longitude                | Optional override, −180 to 180. Set together with latitude.                                                                                       |
 
 Astronomy and calendar labels use **Home Assistant's configured time zone**, including daylight-saving changes. Location overrides affect the astronomy calculation, not the location used by the weather integration. Configure a matching weather entity yourself for a different place.
 

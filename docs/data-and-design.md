@@ -4,6 +4,10 @@
 
 The overview answers three questions: what is it like now, what has been measured today, and what will happen next? It shows current readings once, then puts detailed source information, astronomy and the wind rose behind explicit buttons.
 
+Sunrise, sunset and moon illumination share a compact button above the weather symbol. It opens the full astronomy panel. The wind-rose button shares the chart navigation row, avoiding a separate full-width section. Range buttons show the available number of days without repeating that count below the chart. Height remains content-driven, so long names, translated text and missing-data notices can add rows.
+
+Automatic colours follow the rendered HA card surface, rather than trusting the profile's dark-mode flag: a view theme can differ from that flag. Transparent and gradient cards use the theme's text colour to select contrasting weather accents. Forced light/dark modes retain fixed card palettes. Ancestor theme changes across shadow roots are observed and those observers are removed when the card disconnects.
+
 The weather condition icon is a **weather service estimate**. A local temperature sensor does not reveal cloud coverage. Station temperature/history and provider forecasts can disagree; a gap between the solid and dashed lines is therefore intentional. We never shift the forecast to make the two lines meet.
 
 Data is read from the existing HA state machine, `weather/subscribe_forecast` and `history/history_during_period`. Connections are shared per weather entity and forecast feature set, released when the last card disconnects, and subscription failures retry after 1, 2, 4 and then 5 minutes. HA's connection object handles ordinary websocket resubscription; replacing that object triggers fresh subscriptions. No service calls change your HA configuration or sensor values.
@@ -21,7 +25,9 @@ The navigation is native horizontal scrolling with touch, trackpad, mouse draggi
 
 ## Rainfall
 
-Rain bars show **accumulated precipitation for the indicated period**, never instantaneous intensity. The lane says `mm / h`, `mm / period`, or `mm / day` according to the provider's interval. Tap a point to see its period length. A zero is dry; a dash is unknown.
+Rain bars share the temperature plot and use a separate right-hand scale. They show **accumulated precipitation for the indicated period**, never instantaneous intensity. The rain axis says `mm / h`, `mm / period`, or `mm / day` according to the provider's interval. Tap a point to see its period length. A zero is dry; a dash is unknown. In day views the temperature range and rain bar are offset within the same day column so their values remain readable.
+
+The bar fill represents an amount, not continuous rainfall. HA's met.no integration maps light rain, rain and rain showers to `rainy`; heavy rain and heavy showers map to `pouring`. Its forecast has precipitation totals and probabilities, but no separate drizzle/continuous-rain amounts to stack. The card therefore does not infer or invent such a breakdown. See the [met.no condition and forecast mappings](https://github.com/home-assistant/core/blob/dev/homeassistant/components/met/const.py). A probability in the point details is a chance of precipitation, not a share of the bar's amount.
 
 Recorded hourly rain is the change in a counter over a completed hour. A lifetime counter can reset and begin accumulating again. A daily counter may reset across local midnight; an unexplained decrease within the same local day makes that interval unknown. Any explicit unavailable state in an interval also makes its rain unknown. Missing resets or gaps between recorder samples cannot be reconstructed.
 
@@ -41,13 +47,15 @@ SunCalc runs locally using the HA location or a card override. The moon phase an
 
 Controls have text or accessible names, visible focus states and keyboard operation. Dialogs use native focus handling and Escape to close. Motion respects `prefers-reduced-motion`. Source distinctions use text and solid/dashed strokes in addition to colour. Offscreen point controls leave the tab order; arrow controls move the visible window.
 
+Only the main weather icon moves: cloud drift, rotating sun, floating moon and separate falling rain/snow/hail. Forecast symbols remain still. Setting `animated: false` or the device's reduced-motion preference disables every weather animation.
+
 Lit safely renders user text without injecting HTML. There are no CDN scripts, external fonts, analytics or stored credentials. The PNG project icon is a repository/documentation asset, not a runtime download. The graph uses SVG rather than a charting dependency. History requests are scoped to selected entity IDs. The clock updates once a minute; hidden cards pause clock updates and history polling work.
 
 ## Compatibility and validation
 
 The HA interface contract is deliberately small and covered by fixture-backed tests. Tests exercise unit conversion, missing values, daily rain resets, DST, time-weighted wind history, subscription cleanup/retry, mobile layouts, scrolling, dialogs, wall mode and the visual editor. A local browser smoke test also loads the production release bundle.
 
-These checks do not replace installing in real Home Assistant. This first release has not yet been verified on a live instance. Forecast period meanings and available attributes vary by integration. Reports should identify HA version, weather provider, card version, browser and a sanitized configuration.
+These checks do not replace testing with the intended Home Assistant installation. Forecast period meanings and available attributes vary by integration. Reports should identify HA version, weather provider, card version, browser and a sanitized configuration.
 
 ## References
 

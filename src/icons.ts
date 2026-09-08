@@ -10,11 +10,7 @@ import {
   mdiHomeOutline,
   mdiInformationOutline,
   mdiWeatherFog,
-  mdiWeatherHail,
   mdiWeatherLightning,
-  mdiWeatherRainy,
-  mdiWeatherSnowy,
-  mdiWeatherSnowyRainy,
   mdiWeatherSunny,
   mdiWeatherSunsetDown,
   mdiWeatherSunsetUp,
@@ -63,26 +59,37 @@ export function weatherIcon(
     condition === "clear-night" ||
     condition === "clear";
   const partly = condition === "partlycloudy";
-  const shape = condition.includes("snowy-rainy")
-    ? mdiWeatherSnowyRainy
-    : condition.includes("snow")
-      ? mdiWeatherSnowy
-      : condition.includes("lightning")
-        ? mdiWeatherLightning
-        : condition === "hail"
-          ? mdiWeatherHail
-          : condition === "fog"
-            ? mdiWeatherFog
-            : condition.includes("wind")
-              ? mdiWeatherWindy
-              : condition === "rainy" || condition === "pouring"
-                ? mdiWeatherRainy
-                : mdiCloudOutline;
+  const snow = condition.includes("snow"),
+    rain = condition.includes("rain") || condition === "pouring",
+    hail = condition === "hail",
+    precipitation = snow || rain || hail;
+  const shape =
+    condition.includes("lightning") && !rain
+      ? mdiWeatherLightning
+      : condition === "fog"
+        ? mdiWeatherFog
+        : condition.includes("wind")
+          ? mdiWeatherWindy
+          : mdiCloudOutline;
   return html`<span
-    class="weather-symbol ${clear ? "clear" : ""} ${partly ? "partly" : ""} ${condition.includes("rain") || condition === "pouring" ? "wet" : ""}"
+    class="weather-symbol ${clear ? "clear" : ""} ${partly ? "partly" : ""} ${precipitation ? "precipitating" : ""} ${condition.includes("wind") ? "windy" : ""}"
     aria-hidden="true"
   >
     ${clear || partly ? html`<span class="celestial ${isNight ? "lunar" : "solar"}">${isNight ? moon(phase.fraction, phase.phase) : svg`<svg viewBox="0 0 24 24"><path fill="currentColor" d=${mdiWeatherSunny}></path></svg>`}</span>` : ""}
     ${!clear ? html`<span class="cloud-shape">${svg`<svg viewBox="0 0 24 24"><path fill="currentColor" d=${shape}></path></svg>`}</span>` : ""}
+    ${
+      precipitation
+        ? svg`<svg class="precipitation" viewBox="0 0 64 64" fill="none" stroke="var(--aw-rain)" stroke-width="3" stroke-linecap="round">
+      ${[0, 1, 2].map(
+        (
+          i,
+        ) => svg`<g class="falling ${snow && (!rain || i === 1) ? "snowflake" : ""}" style="--fall-delay:${i * -0.55}s">
+        ${snow && (!rain || i === 1) ? svg`<path d="M${23 + i * 10} 44v8m-3.5-6 7 4m-7 0 7-4"></path>` : hail ? svg`<circle cx=${23 + i * 10} cy="48" r="1.5" fill="var(--aw-rain)"></circle>` : svg`<path d="M${25 + i * 10} 44l-3 7"></path>`}
+      </g>`,
+      )}
+    </svg>`
+        : ""
+    }
+    ${condition === "lightning-rainy" ? svg`<svg class="lightning" viewBox="0 0 64 64"><path d="M33 26l-9 13h7l-4 10 14-16h-8l5-7z" fill="var(--aw-sun)"></path></svg>` : ""}
   </span>`;
 }

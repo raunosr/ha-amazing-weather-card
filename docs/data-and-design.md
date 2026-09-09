@@ -16,6 +16,8 @@ Data is read from the existing HA state machine, `weather/subscribe_forecast` an
 
 ## Timeline
 
+Cards at least 680 pixels wide use a compact overview: apparent temperature and wind sit beside the main temperature, the condition label sits beside its icon, and the daily and auxiliary readings use horizontal rows. Narrower cards keep stacked groups to preserve legibility. The visual editor's `show_header` toggle removes the title row while retaining the configured name.
+
 - The hourly view opens two hours before Now when loaded history permits it. Earlier observations remain accessible by swiping towards the past. A clock label marks each available forecast timestamp or hourly observation. A small dot at Now shows the latest fresh temperature, with its station/provider source in the accessible label. Missing or old readings have no current dot.
 - Measurements use the last known recorded state at each hourly timestamp, including explicit unavailable-state gaps. These are snapshots, **not hourly averages**. A station which stops updating without marking itself unavailable cannot be distinguished from a stable value in recorder history.
 - Forecast timestamps and native provider periods are preserved. Sparse or multi-hour forecasts are not filled with invented hourly samples.

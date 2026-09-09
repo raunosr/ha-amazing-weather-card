@@ -727,6 +727,29 @@ export const cardStyles = css`
     from { transform: translateY(0); }
     to { transform: translateY(-2px); }
   }
+  @container (min-width:680px) {
+    .hero { padding-top: 0; padding-bottom: 10px; }
+    .weather-now { align-items: center; }
+    .current-readings { display: grid; grid-template-columns: max-content minmax(0, 1fr); column-gap: 24px; }
+    .live { grid-column: 1 / -1; }
+    .temperature { grid-column: 1; grid-row: 2 / 4; font-size: 60px; align-self: center; }
+    .feels { grid-column: 2; grid-row: 2; align-self: end; margin: 0 0 3px; }
+    .current-wind { grid-column: 2; grid-row: 3; align-self: start; margin: 3px 0 0; }
+    .condition { display: grid; grid-template-columns: 54px max-content; max-width: none; column-gap: 10px; }
+    .astronomy-strip { grid-column: 1 / -1; flex-direction: row; gap: 12px; }
+    .condition .weather-symbol { grid-column: 1; grid-row: 2 / 4; width: 54px; height: 48px; }
+    .condition > span { grid-column: 2; grid-row: 2; align-self: end; }
+    .condition > small { grid-column: 2; grid-row: 3; align-self: start; }
+    .summary { font-size: 16px; margin-top: 10px; }
+    .day-stats { grid-template-columns: max-content max-content; justify-content: space-between; align-items: center; }
+    .day-extrema { display: grid; grid-template-columns: max-content max-content; gap: 2px 12px; align-items: center; }
+    .day-extrema span { grid-column: 1; }
+    .day-extrema strong { grid-column: 2; grid-row: 1 / 3; font-size: 17px; }
+    .day-extrema small { grid-column: 1; }
+    .rain-rows { grid-template-columns: repeat(4, max-content); gap: 6px 10px; }
+    .sensors { grid-template-columns: repeat(3,max-content); justify-content: space-between; }
+    .sensor { display: flex; gap: 8px; align-items: center; }
+  }
   @container (max-width:480px) {
     .header {
       padding: 12px 16px 0;

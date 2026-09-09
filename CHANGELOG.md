@@ -3,6 +3,7 @@
 ## 0.3.0 — 2026-09-09
 
 - Add a visual editor toggle to hide the full title row (name, home icon, date and time), preserving the configured name and releasing the space for the chart in fixed-height layouts.
+- Compact the overview on wide cards: place feels-like temperature and wind beside the current temperature, combine daily measurements and rain totals on one row, and use an inline sensor row. Narrow cards retain the stacked layout.
 - Support Home Assistant Sections row sizing, with a content-aware minimum and a temperature/rain plot that grows to fill extra height. Keep auto height and expanded dialogs available.
 - Open the hourly timeline two hours before now and return to that position after browsing. Mark a fresh current temperature with a small dot.
 - Align night shading with exact sunrise and sunset times; add compact hourly chart markers and the header's moon phase beside sunset. Preserve polar day/night and DST behaviour.

@@ -118,6 +118,29 @@ export const cardStyles = css`
     display: block;
     overflow: hidden;
   }
+  :host([layout="grid"]) {
+    height: 100%;
+  }
+  :host([layout="grid"]) ha-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: var(--aw-min-height, 0px);
+  }
+  :host([layout="grid"]) ha-card > * {
+    flex-shrink: 0;
+  }
+  :host([layout="grid"]) .body {
+    display: flex;
+    flex-direction: column;
+    flex: 1 0 auto;
+  }
+  :host([layout="grid"]) .body > * {
+    flex-shrink: 0;
+  }
+  :host([layout="grid"]) .body > amazing-weather-chart {
+    flex: 1 0 auto;
+  }
   /* In auto mode HA owns the surface. Re-declaring its CSS properties here
      overrides card-mod theme rules because Lit's adopted sheets come last. */
   :host([data-force-theme="dark"]) ha-card,
@@ -324,13 +347,14 @@ export const cardStyles = css`
   }
   .rain-rows {
     display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 6px 8px;
+    grid-template-columns: minmax(0, max-content) max-content;
+    gap: 6px 16px;
     align-items: baseline;
     font-size: 12px;
     color: var(--aw-muted);
   }
   .rain-rows strong {
+    text-align: right;
     font-size: 16px;
     white-space: nowrap;
     color: var(--aw-text);

@@ -41,7 +41,7 @@ Wind values are displayed in **m/s**, precipitation in **mm**, pressure in **hPa
 | `animated`         | `true`                      | Gentle movement of the main weather icon; disabled by the device's reduced-motion preference.                                                     |
 | `default_range`    | `24`                        | `24`, `7` or `10`. These mean hours, days and days respectively.                                                                                  |
 | `history_hours`    | `24`                        | `0`–`72`. `0` disables recorder requests and measured history.                                                                                    |
-| `stale_after`      | `60`                        | Minutes, `0`–`1440`. `0` disables old-reading indicators.                                                                                         |
+| `stale_after`      | `15`                        | Minutes, `0`–`1440`. `0` disables old-reading indicators.                                                                                         |
 | `wall_mode`        | `false`                     | Return to Now after inactivity.                                                                                                                   |
 | `return_after`     | `60`                        | Seconds of inactivity, `15`–`600`; used only in wall mode.                                                                                        |
 | `latitude`         | HA latitude                 | Optional override, −90 to 90. Set together with longitude.                                                                                        |
@@ -67,10 +67,12 @@ The wind rose needs both wind speed and direction history. Calm measurements are
 
 Today's low/high is calculated from **available recorded temperature values**, including a new current value since the last history refresh. It is not an independently calibrated instrument minimum/maximum. An unavailable portion of history can mean the true daily extreme was missed.
 
-The stale indicator uses `last_reported` when supplied, otherwise `last_updated`. A sensor that only publishes changes may legitimately have an old timestamp; adjust `stale_after` for your station.
+The station-wide warning appears when the newest available selected station reading is older than `stale_after` (15 minutes by default). Quiet UV or rain values do not trigger this banner while other station readings keep updating. Per-sensor age and timestamps remain visible in measurement details. Timestamps use `last_reported` when supplied, otherwise `last_updated`; a sensor that only publishes changes can legitimately have an old timestamp. Existing explicit `stale_after` values are preserved when upgrading.
 
 ## Dashboard layouts
 
-The card supports Masonry and Sections dashboards and reports its content height. Give it enough vertical space; a typical phone layout is approximately 1,050 pixels tall. Horizontal scrolling stays inside the chart. At least 320 pixels of card width is recommended. Expanding the chart opens a native, keyboard-accessible dialog.
+The card supports Masonry and Sections dashboards. In Sections, turn off **Auto height** on the card's **Layout** tab to choose its height in standard HA rows. The minimum is measured from the content and width; there is no fixed maximum. Extra height enlarges the temperature/rain plot without enlarging text. Set neighbouring cards to the same row count to align their bottoms. The minimum reserves room for all forecast periods, so switching between hourly and daily views keeps the card aligned.
+
+Auto height remains available. Long titles, warnings and narrow widths can increase the minimum. Horizontal scrolling stays inside the chart; at least 320 pixels of card width is recommended. The hourly view opens two hours before now when recorded history is available, and the remaining loaded history can be browsed horizontally. Expanding the chart opens a native, keyboard-accessible dialog.
 
 Home Assistant's layout properties such as `grid_options` remain intact when editing the card. The card itself does not write entity states or modify automations.

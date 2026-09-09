@@ -70,7 +70,7 @@ const en = {
   noDaily: "No daily forecast available.",
   missingSensor: "Some selected station readings are unavailable.",
   stale:
-    "Some station readings are old. Check the update times in their details.",
+    "The weather station has not updated recently. Check the update times in its details.",
   lastReading: "Last reading",
   updated: "Updated",
   noValue: "No data",
@@ -193,8 +193,7 @@ const fi: Record<Key, string> = {
   noHourly: "Tuntiennustetta ei saatavilla. Kokeile päivänäkymää.",
   noDaily: "Päiväennustetta ei saatavilla.",
   missingSensor: "Osa valituista sääaseman mittauksista ei ole saatavilla.",
-  stale:
-    "Osa sääaseman mittauksista on vanhoja. Tarkista niiden päivitysajat tiedoista.",
+  stale: "Sääaseman päivitys on viivästynyt. Tarkista päivitysajat tiedoista.",
   lastReading: "Viimeisin mittaus",
   updated: "Päivitetty",
   noValue: "Ei tietoa",

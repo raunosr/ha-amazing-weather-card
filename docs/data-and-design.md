@@ -4,7 +4,7 @@
 
 The overview answers three questions: what is it like now, what has been measured today, and what will happen next? It shows current readings once, then puts detailed source information, astronomy and the wind rose behind explicit buttons.
 
-Sunrise, sunset and moon illumination share a compact button above the weather symbol. It opens the full astronomy panel. The wind-rose button shares the chart navigation row, avoiding a separate full-width section. Range buttons show the available number of days without repeating that count below the chart. Height remains content-driven, so long names, translated text and missing-data notices can add rows.
+Sunrise, sunset and moon illumination share a compact button above the weather symbol. It opens the full astronomy panel. The wind-rose button shares the chart navigation row, avoiding a separate full-width section. Range buttons show the available number of days without repeating that count below the chart. Sections layouts have a measured minimum height that accommodates long names, translated text and missing-data notices. Extra grid rows enlarge the plot while labels retain their size. Auto height and Masonry remain content-driven.
 
 Automatic colours follow the rendered HA card surface, rather than trusting the profile's dark-mode flag: a view theme can differ from that flag. Transparent and gradient cards use the theme's text colour to select contrasting weather accents. Forced light/dark modes retain fixed card palettes. Ancestor theme changes across shadow roots are observed and those observers are removed when the card disconnects.
 
@@ -16,7 +16,7 @@ Data is read from the existing HA state machine, `weather/subscribe_forecast` an
 
 ## Timeline
 
-- The hourly view starts at Now. Earlier observations remain accessible by swiping towards the past. A clock label marks each available forecast timestamp or hourly observation.
+- The hourly view opens two hours before Now when loaded history permits it. Earlier observations remain accessible by swiping towards the past. A clock label marks each available forecast timestamp or hourly observation. A small dot at Now shows the latest fresh temperature, with its station/provider source in the accessible label. Missing or old readings have no current dot.
 - Measurements use the last known recorded state at each hourly timestamp, including explicit unavailable-state gaps. These are snapshots, **not hourly averages**. A station which stops updating without marking itself unavailable cannot be distinguished from a stable value in recorder history.
 - Forecast timestamps and native provider periods are preserved. Sparse or multi-hour forecasts are not filled with invented hourly samples.
 - Day views use one column per provider day, with the supplied maximum/minimum, total precipitation and wind. Missing daily minima stay missing. Wind is the provider's daily value, not an independently calculated daily average or maximum.
@@ -44,6 +44,14 @@ Directions mean where the wind **comes from**, in the meteorological convention.
 ## Astronomy
 
 SunCalc runs locally using the HA location or a card override. The moon phase and illuminated fraction depend on the moment and are effectively global. Moon altitude and sunrise/sunset depend on location. The moon drawing shows phase, not a camera-accurate rotation of the lunar disk for each observer. Missing polar sunrise/sunset is kept as a missing event. Astronomical visibility does not account for clouds or local obstructions.
+
+Hourly night bands begin and end at calculated sunset/sunrise, not rounded hourly samples. The marker's dotted guide uses the same timestamp as the shading boundary. Sunset includes the current moon phase from the header. Daily charts omit these markers to avoid crowding. When events are unusually close, the second time label is omitted visually but remains in its accessible name.
+
+## Freshness
+
+The default tolerance is 15 minutes, with the warning appearing only after that interval. The station-wide banner and footer use the newest report among available configured station readings. A UV or rainfall value that stays constant therefore does not flag the entire station as delayed. The weather provider's refresh time never counts as a station update. Age is compared to the current clock, not to a future forecast timestamp.
+
+Each reading still retains its own source, timestamp and age in measurement details. The card prefers `last_reported` when provided and falls back to `last_updated`. Change-only sensors can appear old even when healthy; conversely, a fresh sensor cannot prove that every other sensor works. This is an update-delay heuristic, not device health monitoring. `stale_after: 0` disables age indicators.
 
 ## Accessibility and performance
 

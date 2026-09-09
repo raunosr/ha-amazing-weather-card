@@ -74,6 +74,66 @@ export function moonPhaseName(phase: number, language: Language): string {
         ]
   )[index]!;
 }
+
+/** Use the same astronomical event times for both labels and night shading.
+ * Sampling whole local days also covers DST changes and polar day/night. */
+export function solarTimeline(
+  start: number,
+  end: number,
+  location: { lat: number; lon: number },
+  zone: string,
+) {
+  const events: { time: number; kind: "rise" | "set" }[] = [];
+  const nights: { start: number; end: number }[] = [];
+  const { lat, lon } = location;
+  if (
+    ![start, end, lat, lon].every(Number.isFinite) ||
+    end <= start ||
+    Math.abs(lat) > 90 ||
+    Math.abs(lon) > 180
+  )
+    return { events, nights };
+  const days = new Set<number>();
+  // Twelve-hour samples avoid skipping a local day during daylight saving.
+  for (
+    let time = start - 24 * HOUR;
+    time <= end + 24 * HOUR;
+    time += 12 * HOUR
+  ) {
+    const day = localDayStart(time, zone);
+    if (days.has(day)) continue;
+    days.add(day);
+    const times = SunCalc.getTimes(new Date(day + 12 * HOUR), lat, lon);
+    for (const [kind, date] of [
+      ["rise", times.sunrise],
+      ["set", times.sunset],
+    ] as const) {
+      const at = date.getTime();
+      if (
+        at >= start &&
+        at <= end &&
+        !events.some((e) => e.time === at && e.kind === kind)
+      )
+        events.push({ time: at, kind });
+    }
+  }
+  events.sort((a, b) => a.time - b.time);
+  // The first event determines which side of the horizon we start on.
+  // With no events (polar day/night), use SunCalc's sunrise altitude.
+  let night = events.length
+    ? events[0]!.kind === "rise"
+    : SunCalc.getPosition(new Date(start), lat, lon).altitude <
+      (-0.833 * Math.PI) / 180;
+  let boundary = start;
+  for (const event of events) {
+    if (night && event.time > boundary)
+      nights.push({ start: boundary, end: event.time });
+    night = event.kind === "set";
+    boundary = event.time;
+  }
+  if (night && end > boundary) nights.push({ start: boundary, end });
+  return { events, nights };
+}
 export function moonPolygon(phase: number, fraction: number): string {
   const r = 19,
     c = 22,

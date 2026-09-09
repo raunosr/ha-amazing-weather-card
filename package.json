@@ -1,6 +1,6 @@
 {
   "name": "ha-amazing-weather-card",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "A Home Assistant card combining your weather station, history and forecast.",
   "type": "module",
   "private": true,

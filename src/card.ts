@@ -13,6 +13,7 @@ import {
   pressureTrend,
   rainInInterval,
   reportedAt,
+  stationFreshness,
   todayExtrema,
   windRose,
 } from "./data";
@@ -45,10 +46,12 @@ import {
 } from "./types";
 import type { AmazingWeatherChart } from "./chart";
 import { CardTheme } from "./theme";
+import { CardGridLayout } from "./grid-layout";
 
 type DialogKind = "chart" | "wind" | "astro" | "station" | null;
 export class AmazingWeatherCard extends LitElement {
   static properties = {
+    layout: { type: String, reflect: true },
     _config: { state: true },
     _forecast: { state: true },
     _history: { state: true },
@@ -59,6 +62,8 @@ export class AmazingWeatherCard extends LitElement {
     _chartAway: { state: true },
   };
   static styles = [iconStyles, cardStyles];
+  layout?: string;
+  private _gridLayout = new CardGridLayout(this);
   private _config?: CardConfig;
   private _hass?: HomeAssistant;
   private _forecast: ForecastSnapshot = {
@@ -144,7 +149,7 @@ export class AmazingWeatherCard extends LitElement {
     return Math.ceil((this.offsetHeight || 850) / 50);
   }
   getGridOptions() {
-    return { columns: 12, min_columns: 6 };
+    return this._gridLayout.options;
   }
 
   connectedCallback() {
@@ -423,9 +428,11 @@ export class AmazingWeatherCard extends LitElement {
       a = astronomy(this._now, this._config!, this._hass!);
     return points.length
       ? html`<amazing-weather-chart
+            .stretch=${this.layout === "grid" && !large}
             .points=${points}
             .daily=${this._range !== 24}
             .now=${this._now}
+            .current=${currentWeather(this._hass!, this._config!, this._now).temperature}
             .language=${this.language}
             .zone=${this.zone}
             .unit=${unit}
@@ -470,7 +477,8 @@ export class AmazingWeatherCard extends LitElement {
         "source" in v &&
         v.source === "station",
     );
-    const stale = stationReadings.some((r) => r.stale),
+    const station = stationFreshness(stationReadings, this._now, c.stale_after),
+      stale = station.stale,
       missing = stationReadings.some((r) => r.value === null);
     const latest = current.temperature,
       source = latest.source === "station" ? t("station") : t("provider");
@@ -638,7 +646,7 @@ export class AmazingWeatherCard extends LitElement {
           ${this._historyError ? html`<p class="status">${t("historyError")}</p>` : nothing}${Object.values(this._forecast.errors).some(Boolean) ? html`<p class="status">${t("forecastError")}</p>` : nothing}
         </section>
         <footer class="footer">
-          <span>${source} · ${this.time(reportedAt(latest.entity))}</span
+          <span>${source} · ${this.time(latest.source === "station" ? (station.updated ?? NaN) : reportedAt(latest.entity))}</span
           ><span>${t("forecast")} · ${updated ? this.time(updated) : "—"}</span
           >${typeof weather.attributes.attribution === "string" ? html`<span class="attribution">${weather.attributes.attribution}</span>` : nothing}
         </footer>

@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.3.0 — 2026-09-09
+
+- Support Home Assistant Sections row sizing, with a content-aware minimum and a temperature/rain plot that grows to fill extra height. Keep auto height and expanded dialogs available.
+- Open the hourly timeline two hours before now and return to that position after browsing. Mark a fresh current temperature with a small dot.
+- Align night shading with exact sunrise and sunset times; add compact hourly chart markers and the header's moon phase beside sunset. Preserve polar day/night and DST behaviour.
+- Use a 15-minute default delay tolerance. Show the station-wide warning only when no available selected station sensor has reported within that time, so quiet UV or rain values do not trigger it. Keep individual timestamps and age indicators in details.
+- Keep rainfall values next to their labels even when the card spans a wide dashboard section.
+- Add grid sizing, timeline, solar boundary, delay tolerance and spacing regression coverage.
+
 ## 0.2.1 — 2026-09-08
 
 - Fix automatic mode overriding card-mod theme CSS. Let the native Home Assistant card render its background, text, borders, shadows and backdrop effects so glass themes remain transparent.

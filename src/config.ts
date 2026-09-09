@@ -7,7 +7,7 @@ export const DEFAULTS = {
   wall_mode: false,
   return_after: 60,
   history_hours: 24,
-  stale_after: 60,
+  stale_after: 15,
   temperature_unit: "auto",
   default_range: 24,
 } as const;

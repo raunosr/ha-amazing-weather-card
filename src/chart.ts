@@ -1,7 +1,8 @@
 import { LitElement, css, html, svg, nothing, type PropertyValues } from "lit";
 import { repeat } from "lit/directives/repeat.js";
-import type { Language, WeatherPoint } from "./types";
-import { icon, weatherIcon } from "./icons";
+import type { Language, Reading, WeatherPoint } from "./types";
+import { icon, moon, weatherIcon } from "./icons";
+import { moonPhaseName, solarTimeline } from "./astronomy";
 import { iconStyles } from "./styles";
 import {
   conditionText,
@@ -35,21 +36,27 @@ export class AmazingWeatherChart extends LitElement {
     points: { attribute: false },
     daily: { type: Boolean },
     now: { type: Number },
+    current: { attribute: false },
     language: { type: String },
     zone: { type: String },
     unit: { type: String },
     location: { attribute: false },
+    stretch: { type: Boolean, reflect: true },
     _width: { state: true },
+    _plotHeight: { state: true },
     _selected: { state: true },
     _left: { state: true },
   };
   points: WeatherPoint[] = [];
   daily = false;
   now = Date.now();
+  current?: Reading;
   language: Language = "en";
   zone = "UTC";
   unit = "°C";
   location?: { lat: number; lon: number };
+  stretch = false;
+  private _plotHeight = 0;
   private _width = 600;
   private _selected: WeatherPoint | null = null;
   private _left = 0;
@@ -91,6 +98,21 @@ export class AmazingWeatherChart extends LitElement {
       }
       .frame {
         position: relative;
+      }
+      :host([stretch]) {
+        display: flex;
+        flex-direction: column;
+      }
+      :host([stretch]) .frame {
+        flex: 1 0 300px;
+        min-height: 300px;
+      }
+      :host([stretch]) .scroll {
+        position: absolute;
+        inset: 0 28px 0 0;
+      }
+      :host([stretch]) .navigation {
+        flex-shrink: 0;
       }
       .scroll {
         position: relative;
@@ -152,6 +174,28 @@ export class AmazingWeatherChart extends LitElement {
         transform: translateX(-50%);
         width: 34px;
         height: 34px;
+      }
+      .solar-event {
+        position: absolute;
+        top: 74px;
+        display: flex;
+        align-items: center;
+        gap: 3px;
+        font-size: 11px;
+        line-height: 18px;
+        white-space: nowrap;
+        color: var(--aw-muted);
+        pointer-events: none;
+      }
+      .solar-event .icon {
+        width: 16px;
+        height: 16px;
+        color: var(--aw-sun);
+      }
+      .solar-event .event-moon {
+        display: inline-flex;
+        width: 15px;
+        height: 15px;
       }
       .wind {
         position: absolute;
@@ -278,6 +322,18 @@ export class AmazingWeatherChart extends LitElement {
   private get scroller() {
     return this.renderRoot.querySelector<HTMLDivElement>(".scroll");
   }
+  getMinimumHeight() {
+    // Reserve daily-view space too, so changing the forecast period keeps
+    // neighbouring cards aligned. Includes room for a non-overlay scrollbar.
+    return (
+      300 +
+      Math.max(
+        44,
+        this.renderRoot.querySelector(".navigation")?.getBoundingClientRect()
+          .height || 0,
+      )
+    );
+  }
   get away() {
     return this.daily
       ? this._left > 2
@@ -297,13 +353,19 @@ export class AmazingWeatherChart extends LitElement {
   }
   private observeSize() {
     this._resize?.disconnect();
+    const scroll = this.scroller;
+    if (!scroll) return;
     this._resize = new ResizeObserver((entries) => {
-      const width = (entries[0]?.contentRect.width || 0) - 28;
+      const width = entries[0]?.contentRect.width || 0;
       if (width > 0 && Math.abs(width - this._width) > 0.5) this._width = width;
+      const height = this.stretch ? entries[0]?.contentRect.height || 0 : 0;
+      if (Math.abs(height - this._plotHeight) > 0.5) this._plotHeight = height;
     });
-    this._resize.observe(this);
+    this._resize.observe(scroll);
   }
   protected updated(changed: PropertyValues) {
+    if (changed.has("stretch") || (changed.has("points") && !this._resize))
+      this.observeSize();
     if (changed.has("points") && this._selected) {
       const selected = this._selected;
       this._selected =
@@ -427,13 +489,24 @@ export class AmazingWeatherChart extends LitElement {
             0.5) *
             step
       : (time: number) => 32 + ((time - start) / HOUR) * step;
-    const values = this.points
-        .flatMap((p) => [p.temperature, p.low])
-        .filter((v): v is number => v !== null),
+    const values = [
+        ...this.points
+          .flatMap((p) => [p.temperature, p.low])
+          .filter((v): v is number => v !== null),
+        ...(!daily &&
+        this.current?.value !== null &&
+        this.current?.value !== undefined &&
+        !this.current.stale
+          ? [this.current.value]
+          : []),
+      ],
       min = values.length ? Math.floor(Math.min(...values)) - 1 : 0,
       max = values.length ? Math.ceil(Math.max(...values)) + 1 : 1;
-    const top = daily ? 116 : 98,
-      bottom = daily ? 212 : 182,
+    const top = daily ? 116 : 122,
+      extra = this.stretch
+        ? Math.max(0, this._plotHeight - (daily ? 284 : 262))
+        : 0,
+      bottom = (daily ? 212 : 206) + extra,
       rainTop = top,
       rainBottom = bottom,
       windTop = bottom + (daily ? 48 : 32);
@@ -455,13 +528,16 @@ export class AmazingWeatherChart extends LitElement {
       min,
       max,
       rainMax,
-      home: daily ? 0 : Math.max(0, x(this.now) - 32),
+      home: daily ? 0 : Math.max(0, x(this.now - 2 * HOUR) - 32),
       x,
       y: (v) => bottom - ((v - min) / (max - min)) * (bottom - top),
       ry: (v) => rainBottom - (v / rainMax) * (rainBottom - rainTop),
     };
   }
-  private line(points: WeatherPoint[], g: Geometry) {
+  private line(
+    points: Pick<WeatherPoint, "time" | "temperature">[],
+    g: Geometry,
+  ) {
     let active = false;
     return points
       .map((p) => {
@@ -499,6 +575,24 @@ export class AmazingWeatherChart extends LitElement {
         .every((p) => p.end - p.time <= HOUR + 1000);
     const selected = this._selected,
       temperatureTicks = [...new Set([g.min + 1, g.max - 1])];
+    const current =
+      !this.daily &&
+      this.current?.value !== null &&
+      this.current?.value !== undefined &&
+      !this.current.stale &&
+      !this.current.unavailable
+        ? this.current
+        : null;
+    const solar =
+      !this.daily && this.location
+        ? solarTimeline(
+            this.now - (g.x(this.now) / g.step) * HOUR,
+            this.now + ((g.width - g.x(this.now)) / g.step) * HOUR,
+            this.location,
+            this.zone,
+          )
+        : { events: [], nights: [] };
+    const moonlight = SunCalc.getMoonIllumination(new Date(this.now));
     return html`<div class="frame">
         <div
           class="scroll"
@@ -528,7 +622,8 @@ export class AmazingWeatherChart extends LitElement {
               <title>
                 ${this.daily ? t("forecast") : t("measured") + " / " + t("forecast")}
               </title>
-              ${!this.daily && this.location ? this.points.map((p) => (SunCalc.getPosition(new Date(p.time), this.location!.lat, this.location!.lon).altitude < 0 ? svg`<rect x=${g.x(p.time)} y=${g.top - 5} width=${Math.max(1, Math.min(g.width - g.x(p.time), (g.step * (p.end - p.time)) / HOUR))} height=${g.rainBottom - g.top + 5} fill="var(--aw-night)" opacity=".4"></rect>` : nothing)) : nothing}
+              ${solar.nights.map((night) => svg`<rect class="night-band" x=${g.x(night.start)} y=${g.top - 5} width=${g.x(night.end) - g.x(night.start)} height=${g.bottom - g.top + 5} fill="var(--aw-night)" opacity=".4"></rect>`)}
+              ${solar.events.map((event) => svg`<line class="solar-boundary" data-kind=${event.kind} data-time=${event.time} x1=${g.x(event.time)} x2=${g.x(event.time)} y1="94" y2=${g.bottom} stroke="var(--aw-muted)" stroke-dasharray="2 4" opacity=".3"></line>`)}
               ${hasTemperature ? temperatureTicks.map((value) => svg`<line x1="0" x2=${g.width} y1=${g.y(value)} y2=${g.y(value)} stroke="var(--aw-line)" opacity=".6"></line>`) : nothing}
               <line x1="0" x2=${g.width} y1=${g.bottom} y2=${g.bottom} stroke="var(--aw-line)" opacity=".6"></line>
               ${this.points.map((p) => {
@@ -555,14 +650,27 @@ export class AmazingWeatherChart extends LitElement {
                   ? (["measured", "forecast"] as const).map(
                       (kind) =>
                         svg`<path data-series=${kind} d=${this.line(
-                          this.points.filter((p) => p.kind === kind),
+                          [
+                            ...this.points.filter((p) => p.kind === kind),
+                            ...(kind === "measured" &&
+                            current?.source === "station"
+                              ? [{ time: this.now, temperature: current.value }]
+                              : []),
+                          ],
                           g,
                         )} fill="none" stroke="var(--aw-temp)" stroke-width="2.5" stroke-linejoin="round" stroke-dasharray=${kind === "forecast" ? "5 4" : "none"}></path>`,
                     )
                   : nothing
               }
               ${!this.daily ? svg`<line x1=${g.x(this.now)} x2=${g.x(this.now)} y1=${g.top - 8} y2=${g.windTop - 12} stroke="var(--aw-temp)" opacity=".55"></line>` : nothing}
+              ${current ? svg`<circle class="now-dot" cx=${g.x(this.now)} cy=${g.y(current.value!)} r="4.5" fill="var(--aw-temp)" stroke="var(--aw-bg)" stroke-width="2"><title>${t("now")} · ${t(current.source === "station" ? "station" : "provider")} · ${n(current.value)} ${this.unit}</title></circle>` : nothing}
             </svg>
+            ${solar.events.map((event, index) => {
+              const close =
+                index > 0 &&
+                g.x(event.time) - g.x(solar.events[index - 1]!.time) < 84;
+              return html`<span class="solar-event" data-kind=${event.kind} style="left:${Math.max(0, Math.min(g.width - 82, g.x(event.time) - 8))}px" role="img" aria-label=${t(event.kind) + " " + formatTime(event.time, this.language, this.zone) + (event.kind === "set" ? ", " + moonPhaseName(moonlight.phase, this.language) : "")}>${icon(event.kind)}${!close ? formatTime(event.time, this.language, this.zone) : nothing}${event.kind === "set" ? html`<span class="event-moon">${moon(moonlight.fraction, moonlight.phase)}</span>` : nothing}</span>`;
+            })}
             <div class="symbols" aria-hidden="true">
               ${this.points.map((p) => html`<span class="symbol" style="left:${g.x(p.time)}px">${p.condition ? weatherIcon(p.condition, this.daily ? localDayStart(p.time, this.zone) + 12 * HOUR : p.time, this.location) : nothing}</span>`)}
             </div>
@@ -588,10 +696,10 @@ export class AmazingWeatherChart extends LitElement {
           </div>
         </div>
         <div class="axes" aria-hidden="true">
-          <span class="caption temperature-axis" style="top:76px"
+          <span class="caption temperature-axis" style="top:${this.daily ? 76 : 100}px"
             >${t("temperature")} · ${this.unit}</span
           >
-          <span class="caption rain-axis" style="top:76px"
+          <span class="caption rain-axis" style="top:${this.daily ? 76 : 100}px"
             >${t("rain")} · mm /
             ${this.daily ? (this.language === "fi" ? "vrk" : "day") : hourlyRain ? "h" : this.language === "fi" ? "jakso" : "period"}</span
           >

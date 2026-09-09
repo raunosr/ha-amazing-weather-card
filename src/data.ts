@@ -25,6 +25,24 @@ export const unavailable = (entity?: HassEntity): boolean =>
   !entity || ["unknown", "unavailable"].includes(entity.state);
 export const reportedAt = (entity?: HassEntity): number =>
   entity ? Date.parse(entity.last_reported || entity.last_updated) : NaN;
+
+/** A quiet UV/rain sensor does not mean the whole station stopped reporting.
+ * Keep each reading's own age separate; this is only the station-wide warning. */
+export function stationFreshness(
+  readings: Reading[],
+  now: number,
+  minutes = 15,
+) {
+  const times = readings
+    .filter((r) => r.source === "station" && !r.unavailable)
+    .map((r) => reportedAt(r.entity))
+    .filter(Number.isFinite);
+  const updated = times.length ? Math.max(...times) : null;
+  return {
+    updated,
+    stale: !!minutes && updated !== null && now - updated > minutes * MINUTE,
+  };
+}
 export const displayTemperatureUnit = (
   config: CardConfig,
   hass: HomeAssistant,

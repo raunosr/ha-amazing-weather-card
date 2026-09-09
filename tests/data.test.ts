@@ -82,6 +82,7 @@ describe("configuration and current sources", () => {
       { entity: "weather.home", latitude: 60 },
       { entity: "weather.home", history_hours: 1000 },
       { entity: "weather.home", animated: "false" },
+      { entity: "weather.home", show_header: "false" },
       { entity: "weather.home", temperature_entity: "<img>" },
     ])
       expect(() => validateConfig(config)).toThrow();

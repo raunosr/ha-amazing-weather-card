@@ -501,13 +501,17 @@ export class AmazingWeatherCard extends LitElement {
         @pointerup=${this.scheduleReturn}
         @keydown=${this.scheduleReturn}
       >
-        <header class="header">
+        ${
+          c.show_header !== false
+            ? html`<header class="header">
           <span class="brand">${icon("home")}<span>${name}</span></span
           ><span class="clock"
             >${formatDay(this._now, this.language, this.zone)} ·
             ${this.time(this._now)}</span
           >
-        </header>
+        </header>`
+            : nothing
+        }
         <section class="hero" aria-label=${t("now")}>
           <div class="weather-now">
             <div class="current-readings">

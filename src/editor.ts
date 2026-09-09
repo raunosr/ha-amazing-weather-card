@@ -75,6 +75,7 @@ export class AmazingWeatherEditor extends LitElement {
     const map: Record<string, string> = {
       entity: this.t("weatherEntity"),
       name: this.t("name"),
+      show_header: this.t("showHeader"),
       language: this.t("language"),
       theme: this.t("theme"),
       animated: this.t("animated"),
@@ -95,11 +96,13 @@ export class AmazingWeatherEditor extends LitElement {
     );
   };
   private helper = (schema: { name: string }) =>
-    schema.name === "rain_total_entity"
-      ? this.t("rainTotalHelp")
-      : schema.name === "latitude"
-        ? this.t("locationHelp")
-        : undefined;
+    schema.name === "show_header"
+      ? this.t("headerHelp")
+      : schema.name === "rain_total_entity"
+        ? this.t("rainTotalHelp")
+        : schema.name === "latitude"
+          ? this.t("locationHelp")
+          : undefined;
   private changed(value: Record<string, unknown>) {
     const config = {
       ...this._config,
@@ -126,6 +129,7 @@ export class AmazingWeatherEditor extends LitElement {
         selector: { entity: { domain: "weather" } },
       },
       { name: "name", selector: { text: {} } },
+      { name: "show_header", selector: { boolean: {} } },
       {
         type: "expandable",
         name: "station",
@@ -321,6 +325,8 @@ export class AmazingWeatherEditor extends LitElement {
         ></ha-form>
         <p class="help">${t("sensorsHelp")}</p>`;
     return html`${this.entityField("entity", "weather")}${this.field("name")}
+      ${this.field("show_header", "checkbox")}
+      <p class="help">${t("headerHelp")}</p>
       <fieldset>
         <legend>${t("stationSensors")}</legend>
         <p class="help">${t("sensorsHelp")}</p>

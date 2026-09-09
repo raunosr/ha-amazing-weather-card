@@ -89,6 +89,19 @@ test("fills Sections rows and gives extra height to the plot without scaling lab
       .locator(".temperature")
       .evaluate((el) => getComputedStyle(el).fontSize),
   ).toBe(font);
+  const expandedHeight = (await svg.boundingBox())!.height;
+  await page.getByRole("button", { name: "Card editor", exact: true }).click();
+  const toggle = page
+    .locator("ha-amazing-weather-card-editor")
+    .getByLabel("Näytä otsikko", { exact: true });
+  await toggle.uncheck();
+  await expect(card.locator(".header")).toHaveCount(0);
+  await expect.poll(async () => (await fit(page)).delta).toBeLessThan(2);
+  await expect
+    .poll(async () => (await svg.boundingBox())!.height)
+    .toBeGreaterThan(expandedHeight + 25);
+  await toggle.check();
+  await expect(card.locator(".header")).toBeVisible();
   // Shrink again: the previous SVG height must not become a new minimum.
   await rows(page, 1);
   await expect

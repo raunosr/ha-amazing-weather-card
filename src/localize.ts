@@ -94,6 +94,9 @@ const en = {
     "Measurements require station sensors and recorder history.",
   noRoseHistory: "No usable wind history available.",
   name: "Card name",
+  showHeader: "Show header",
+  headerHelp:
+    "Show the title row with the card name, home icon, date and time.",
   weatherEntity: "Forecast weather entity",
   stationSensors: "Weather station sensors (optional)",
   appearance: "Appearance and behaviour",
@@ -217,6 +220,9 @@ const fi: Record<Key, string> = {
     "Mittaukset tarvitsevat sääaseman anturit ja tallennetun historian.",
   noRoseHistory: "Käyttökelpoista tuulihistoriaa ei saatavilla.",
   name: "Kortin nimi",
+  showHeader: "Näytä otsikko",
+  headerHelp:
+    "Näyttää otsikkorivin: kortin nimen, kotikuvakkeen, päivämäärän ja kellonajan.",
   weatherEntity: "Ennusteen sääentiteetti",
   stationSensors: "Sääaseman anturit (valinnaiset)",
   appearance: "Ulkoasu ja toiminta",

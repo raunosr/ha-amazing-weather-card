@@ -3,6 +3,7 @@ import { SENSOR_FIELDS, type CardConfig } from "./types";
 export const DEFAULTS = {
   language: "auto",
   theme: "auto",
+  show_header: true,
   animated: true,
   wall_mode: false,
   return_after: 60,
@@ -55,7 +56,7 @@ export function validateConfig(input: unknown): CardConfig {
     )
       throw new Error(`${key} must be between ${min} and ${max}.`);
   }
-  for (const key of ["wall_mode", "animated"])
+  for (const key of ["wall_mode", "animated", "show_header"])
     if (raw[key] !== undefined && typeof raw[key] !== "boolean")
       throw new Error(`${key} must be a boolean.`);
   if ((raw.latitude === undefined) !== (raw.longitude === undefined))

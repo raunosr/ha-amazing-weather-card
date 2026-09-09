@@ -195,6 +195,14 @@ test("edits the configuration, preserves unknown options and escapes user text",
     "<img src=x onerror=alert(1)>",
   );
   expect(await card.locator(".brand img").count()).toBe(0);
+  const headerToggle = editor.getByLabel("Näytä otsikko", { exact: true });
+  await expect(headerToggle).toBeChecked();
+  await headerToggle.uncheck();
+  await expect(card.locator(".header")).toHaveCount(0);
+  await headerToggle.check();
+  await expect(card.locator(".brand")).toContainText(
+    "<img src=x onerror=alert(1)>",
+  );
   await page.evaluate(() => {
     const card = window as unknown as {
       demoCard: { setConfig(c: unknown): void };

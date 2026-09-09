@@ -92,6 +92,7 @@ test("passes the full configuration through the Home Assistant form branch", asy
   });
   expect(result).toMatchObject({ entity: "weather.home", connected: true });
   expect(result.schema).toContain("station");
+  expect(result.schema).toContain("show_header");
   await expect
     .poll(() =>
       form.evaluate(
@@ -110,7 +111,12 @@ test("passes the full configuration through the Home Assistant form branch", asy
     f.dispatchEvent(
       new CustomEvent("value-changed", {
         detail: {
-          value: { ...f.data, name: "Form test", rain_today_entity: "" },
+          value: {
+            ...f.data,
+            name: "Form test",
+            show_header: false,
+            rain_today_entity: "",
+          },
         },
         bubbles: true,
         composed: true,
@@ -120,6 +126,7 @@ test("passes the full configuration through the Home Assistant form branch", asy
   });
   expect(config).toMatchObject({
     name: "Form test",
+    show_header: false,
     grid_options: { columns: 9 },
   });
   expect(config).not.toHaveProperty("rain_today_entity");

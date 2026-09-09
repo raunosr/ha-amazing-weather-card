@@ -47,6 +47,7 @@ export interface CardConfig extends Partial<Record<SensorField, string>> {
   type: "custom:ha-amazing-weather-card";
   entity: string;
   name?: string;
+  show_header?: boolean;
   language?: "auto" | "fi" | "en";
   theme?: "auto" | "dark" | "light";
   animated?: boolean;

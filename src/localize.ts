@@ -95,6 +95,13 @@ const en = {
   noRoseHistory: "No usable wind history available.",
   name: "Card name",
   showHeader: "Show header",
+  gridHeight: "Grid height",
+  gridHeightHelp:
+    "For Sections dashboards. Set rows here when Home Assistant's Layout picker stops at eight. The card keeps a minimum height for its content; extra rows enlarge the chart. Width is set in Layout.",
+  gridRows: "Number of grid rows",
+  autoHeight: "Automatic height",
+  fewerRows: "Decrease rows",
+  moreRows: "Increase rows",
   headerHelp:
     "Show the title row with the card name, home icon, date and time.",
   weatherEntity: "Forecast weather entity",
@@ -221,6 +228,13 @@ const fi: Record<Key, string> = {
   noRoseHistory: "Käyttökelpoista tuulihistoriaa ei saatavilla.",
   name: "Kortin nimi",
   showHeader: "Näytä otsikko",
+  gridHeight: "Ruudukkokorkeus",
+  gridHeightHelp:
+    "Sections-näkymiin. Aseta rivimäärä tästä, jos Home Assistantin Layout-valitsin rajoittuu kahdeksaan. Kortti säilyttää sisällön tarvitseman minimikorkeuden; lisärivit kasvattavat kuvaajaa. Leveyttä säädetään Layout-välilehdellä.",
+  gridRows: "Ruudukkorivien määrä",
+  autoHeight: "Automaattinen korkeus",
+  fewerRows: "Vähennä rivejä",
+  moreRows: "Lisää rivejä",
   headerHelp:
     "Näyttää otsikkorivin: kortin nimen, kotikuvakkeen, päivämäärän ja kellonajan.",
   weatherEntity: "Ennusteen sääentiteetti",

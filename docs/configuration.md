@@ -72,7 +72,7 @@ The station-wide warning appears when the newest available selected station read
 
 ## Dashboard layouts
 
-The card supports Masonry and Sections dashboards. In Sections, turn off **Auto height** on the card's **Layout** tab to choose its height in standard HA rows. The minimum is measured from the content and width; there is no fixed maximum. Extra height enlarges the temperature/rain plot without enlarging text. Set neighbouring cards to the same row count to align their bottoms. The minimum reserves room for all forecast periods, so switching between hourly and daily views keeps the card aligned.
+The card supports Masonry and Sections dashboards. In Sections, open **Config → Grid height** to choose standard HA rows using the number field or −/+ buttons, or enable automatic height. This writes `grid_options.rows` and preserves the width. Home Assistant's native Layout touch picker currently spans only eight rows, so use the card's controls for taller sizes. The controls accept 1–100 rows; the effective minimum is measured from the content and width. Extra height enlarges the temperature/rain plot without enlarging text. Set neighbouring cards to the same row count to align their bottoms. The minimum reserves room for all forecast periods, so switching between hourly and daily views keeps the card aligned.
 
 Auto height remains available. Long titles, warnings and narrow widths can increase the minimum. Horizontal scrolling stays inside the chart; at least 320 pixels of card width is recommended. The hourly view opens two hours before now when recorded history is available, and the remaining loaded history can be browsed horizontally. Expanding the chart opens a native, keyboard-accessible dialog.
 

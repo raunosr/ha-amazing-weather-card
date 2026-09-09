@@ -48,6 +48,30 @@ export class AmazingWeatherEditor extends LitElement {
       gap: 10px;
       min-height: 44px;
     }
+    details.height {
+      margin: 18px 0;
+      padding: 12px 14px;
+      border: 1px solid var(--divider-color, #aaa);
+      border-radius: 9px;
+    }
+    summary {
+      cursor: pointer;
+      min-height: 32px;
+    }
+    .row-controls {
+      display: grid;
+      grid-template-columns: 44px minmax(0, 1fr) 44px;
+      gap: 8px;
+    }
+    .row-controls button {
+      font: inherit;
+      font-size: 24px;
+      border: 1px solid var(--divider-color, #aaa);
+      border-radius: 7px;
+      background: var(--card-background-color, #fff);
+      color: var(--primary-text-color, #111);
+      cursor: pointer;
+    }
     fieldset {
       border: 1px solid var(--divider-color, #aaa);
       border-radius: 9px;
@@ -243,6 +267,42 @@ export class AmazingWeatherEditor extends LitElement {
       },
     ];
   }
+  private gridHeight() {
+    const rows = this._config.grid_options?.rows;
+    const auto = rows === "auto";
+    const count = typeof rows === "number" ? rows : 14;
+    const setRows = (value: number | "auto") => {
+      if (
+        typeof value === "number" &&
+        (!Number.isFinite(value) || value < 1 || value > 100)
+      )
+        return;
+      this.changed({
+        grid_options: {
+          ...this._config.grid_options,
+          rows: typeof value === "number" ? Math.round(value) : value,
+        },
+      });
+    };
+    return html`<details class="height">
+      <summary>${this.t("gridHeight")}</summary>
+      <p class="help">${this.t("gridHeightHelp")}</p>
+      <label class="check"><input type="checkbox" .checked=${auto}
+        @change=${(e: Event) => setRows((e.target as HTMLInputElement).checked ? "auto" : 14)}
+      />${this.t("autoHeight")}</label>
+      ${
+        auto
+          ? nothing
+          : html`<label for="grid-rows">${this.t("gridRows")}</label>
+        <div class="row-controls">
+          <button type="button" aria-label=${this.t("fewerRows")} ?disabled=${count <= 1} @click=${() => setRows(count - 1)}>−</button>
+          <input id="grid-rows" type="number" min="1" max="100" step="1" .value=${String(count)}
+            @change=${(e: Event) => setRows((e.target as HTMLInputElement).valueAsNumber)} />
+          <button type="button" aria-label=${this.t("moreRows")} ?disabled=${count >= 100} @click=${() => setRows(count + 1)}>+</button>
+        </div>`
+      }
+    </details>`;
+  }
   private field(
     name: string,
     kind = "text",
@@ -323,10 +383,12 @@ export class AmazingWeatherEditor extends LitElement {
             this.changed(event.detail.value);
           }}
         ></ha-form>
+        ${this.gridHeight()}
         <p class="help">${t("sensorsHelp")}</p>`;
     return html`${this.entityField("entity", "weather")}${this.field("name")}
       ${this.field("show_header", "checkbox")}
       <p class="help">${t("headerHelp")}</p>
+      ${this.gridHeight()}
       <fieldset>
         <legend>${t("stationSensors")}</legend>
         <p class="help">${t("sensorsHelp")}</p>

@@ -70,6 +70,11 @@ test("fills Sections rows and gives extra height to the plot without scaling lab
 }) => {
   await mountGrid(page);
   const card = page.locator("ha-amazing-weather-card");
+  const bounds = await card.evaluate((el) =>
+    (el as AmazingWeatherCard).getGridOptions(),
+  );
+  // HA's row picker falls back to eight unless max_rows is supplied.
+  expect(bounds.max_rows ?? 8).toBeGreaterThan(bounds.min_rows);
   expect(
     await card.evaluate((el) => (el as AmazingWeatherCard).getGridOptions()),
   ).toMatchObject({ rows: expect.any(Number), min_rows: expect.any(Number) });
@@ -107,6 +112,55 @@ test("fills Sections rows and gives extra height to the plot without scaling lab
   await expect
     .poll(async () => (await svg.boundingBox())!.height)
     .toBeLessThan(before + 2);
+  await expect.poll(async () => (await fit(page)).overflow).toBeLessThan(2);
+});
+
+test("editor row controls resize taller Sections cards and preserve width", async ({
+  page,
+}) => {
+  await mountGrid(page);
+  await page.getByRole("button", { name: "Card editor", exact: true }).click();
+  const editor = page.locator("ha-amazing-weather-card-editor");
+  await editor.evaluate((el) => {
+    const e = el as HTMLElement & { setConfig(c: unknown): void };
+    const demo = window as unknown as {
+      demoConfig: CardConfig;
+      applyGrid(): void;
+    };
+    e.setConfig({ ...demo.demoConfig, grid_options: { columns: 9, rows: 14 } });
+    e.addEventListener("config-changed", (event) => {
+      const config = (event as CustomEvent<{ config: CardConfig }>).detail
+        .config;
+      const cell = document.getElementById("grid-cell")!;
+      cell.dataset.rows = String(config.grid_options?.rows);
+      cell.dataset.columns = String(config.grid_options?.columns);
+      demo.applyGrid();
+    });
+  });
+  await editor.getByText("Ruudukkokorkeus", { exact: true }).click();
+  const count = editor.getByLabel("Ruudukkorivien määrä", { exact: true });
+  await count.fill("18");
+  await count.press("Tab");
+  const cell = page.locator("#grid-cell");
+  await expect(cell).toHaveAttribute("data-rows", "18");
+  await expect(cell).toHaveAttribute("data-columns", "9");
+  await expect.poll(async () => (await cell.boundingBox())!.height).toBe(1144);
+  await expect.poll(async () => (await fit(page)).delta).toBeLessThan(2);
+  await editor
+    .getByRole("button", { name: "Vähennä rivejä", exact: true })
+    .click();
+  await expect(count).toHaveValue("17");
+  await expect.poll(async () => (await cell.boundingBox())!.height).toBe(1080);
+  await editor
+    .getByRole("button", { name: "Lisää rivejä", exact: true })
+    .click();
+  await expect(count).toHaveValue("18");
+  await editor.getByLabel("Automaattinen korkeus", { exact: true }).check();
+  await expect(cell).toHaveAttribute("data-rows", "auto");
+  await expect(count).toHaveCount(0);
+  await expect
+    .poll(async () => (await cell.boundingBox())!.height)
+    .toBeLessThan(1144);
   await expect.poll(async () => (await fit(page)).overflow).toBeLessThan(2);
 });
 

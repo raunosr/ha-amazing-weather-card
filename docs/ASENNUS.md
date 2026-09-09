@@ -26,6 +26,8 @@ Jos kortti ei ilmesty valikkoon, tarkista kojelaudan resurssit. Seuraavan osoitt
 
 ## Oma sääasema käyttöön
 
+Sections-näkymässä säädä kortin korkeutta kohdasta **Config → Ruudukkokorkeus**. Rivimäärä ja −/+-painikkeet muuttavat HA:n tavallista `grid_options.rows`-asetusta. Lisärivit kasvattavat kuvaajaa, ja liian pieni rivimäärä rajautuu sisällön tarvitsemaan minimiin. Voit myös valita automaattisen korkeuden. HA:n oman Layout-välilehden kosketusruudukko ulottuu vain kahdeksaan riviin, joten käytä korkeampiin kortteihin kortin omia säätimiä. Leveyttä säädetään edelleen Layout-välilehdellä.
+
 Voit aloittaa pelkällä sääennusteella:
 
 ```yaml

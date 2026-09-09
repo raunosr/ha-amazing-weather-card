@@ -24,6 +24,10 @@ export class CardGridLayout implements ReactiveController {
       min_columns: 6,
       rows: this.rows,
       min_rows: this.rows,
+      // HA's picker otherwise defaults to max_rows=8, below our minimum.
+      // Its touch range is still eight rows; the card editor also provides
+      // direct row controls without depending on private HA components.
+      max_rows: Math.max(100, this.rows),
     };
   }
   hostConnected() {

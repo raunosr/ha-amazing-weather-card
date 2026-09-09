@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.1 — 2026-09-09
+
+- Fix the native Layout row bounds being inverted for cards taller than eight rows.
+- Add accessible row-count and −/+ controls, plus automatic height, in the card editor. These write standard `grid_options.rows` and preserve width and other settings. Home Assistant's eight-row touch picker cannot reach taller cards, so use Config → Grid height for those sizes.
+- Keep content-aware minimum height and use extra rows for the chart.
+
 ## 0.3.0 — 2026-09-09
 
 - Add a visual editor toggle to hide the full title row (name, home icon, date and time), preserving the configured name and releasing the space for the chart in fixed-height layouts.

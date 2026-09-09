@@ -130,4 +130,16 @@ test("passes the full configuration through the Home Assistant form branch", asy
     grid_options: { columns: 9 },
   });
   expect(config).not.toHaveProperty("rain_today_entity");
+  const editor = page.locator("ha-amazing-weather-card-editor");
+  await editor.getByText("Ruudukkokorkeus", { exact: true }).click();
+  await editor
+    .getByRole("button", { name: "Lisää rivejä", exact: true })
+    .click();
+  await expect
+    .poll(() =>
+      form.evaluate(
+        (el) => (el as HTMLElement & { data: CardConfig }).data.grid_options,
+      ),
+    )
+    .toEqual({ columns: 9, rows: 15 });
 });
